@@ -1,0 +1,37 @@
+{
+  "name": "renovation-project-manager",
+  "version": "1.0.0",
+  "description": "Internal web application that automatically creates standardized Monday.com project boards for renovation projects",
+  "main": "index.html",
+  "scripts": {
+    "start": "live-server --host=localhost --port=8000 --open --cors",
+    "dev": "live-server --host=localhost --port=8000 --open --cors --watch=.",
+    "serve": "python server.py",
+    "setup": "npm install",
+    "test": "echo \"Tests not implemented yet\" && exit 0"
+  },
+  "keywords": [
+    "renovation",
+    "project-management",
+    "monday.com",
+    "automation",
+    "construction"
+  ],
+  "author": "Internal Development Team",
+  "license": "MIT",
+  "devDependencies": {
+    "live-server": "^1.2.2"
+  },
+  "repository": {
+    "type": "git",
+    "url": "internal"
+  },
+  "engines": {
+    "node": ">=14.0.0"
+  },
+  "browserslist": [
+    "last 2 versions",
+    "not dead",
+    "> 1%"
+  ]
+} 

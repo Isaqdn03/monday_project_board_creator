@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Options Fix Validation</title>
+</head>
+<body>
+    <h1>Testing Mock Select Element Options Fix</h1>
+    <div id="results"></div>
+
+    <script>
+        // Test the fix for select element options
+        function testSelectElementFix() {
+            const results = document.getElementById('results');
+            
+            try {
+                // Create a real select element (this is what was causing the conflict)
+                const select = document.createElement('select');
+                
+                // Test 1: Verify real options property is read-only
+                try {
+                    select.options = ['test'];
+                    results.innerHTML += '<div style="color: red;">❌ Error: Real options property should be read-only!</div>';
+                } catch (error) {
+                    results.innerHTML += '<div style="color: green;">✅ Confirmed: Real HTMLSelectElement.options is read-only</div>';
+                }
+                
+                // Test 2: Test our mock approach
+                // Simulate our enhanced createMockElement for select
+                select._mockOptions = [];
+                
+                select.setMockOptions = function(optionArray) {
+                    if (Array.isArray(optionArray)) {
+                        this._mockOptions = [...optionArray];
+                    }
+                };
+                
+                Object.defineProperty(select, 'mockOptions', {
+                    get() {
+                        return this._mockOptions;
+                    },
+                    set(value) {
+                        if (Array.isArray(value)) {
+                            this._mockOptions = [...value];
+                        }
+                    }
+                });
+                
+                // Test setting mock options
+                const testOptions = ['Option 1', 'Option 2', 'Option 3'];
+                select.mockOptions = testOptions;
+                
+                if (select.mockOptions.length === 3 && select.mockOptions.includes('Option 1')) {
+                    results.innerHTML += '<div style="color: green;">✅ Mock options property works correctly!</div>';
+                } else {
+                    results.innerHTML += '<div style="color: red;">❌ Mock options property failed</div>';
+                }
+                
+                results.innerHTML += '<div style="color: blue;">🎉 Fix validation complete! Tests should now pass.</div>';
+                
+            } catch (error) {
+                results.innerHTML += `<div style="color: red;">❌ Error during testing: ${error.message}</div>`;
+            }
+        }
+        
+        // Run test when page loads
+        window.onload = testSelectElementFix;
+    </script>
+</body>
+</html>

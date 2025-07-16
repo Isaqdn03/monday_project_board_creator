@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Column Creation</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .test-section {
+            margin: 20px 0;
+            padding: 20px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+        button {
+            background: #0073ea;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover {
+            background: #005bb5;
+        }
+        .result {
+            margin: 10px 0;
+            padding: 10px;
+            background: #f5f5f5;
+            border-radius: 3px;
+            font-family: monospace;
+            white-space: pre-wrap;
+        }
+        .success {
+            background: #e8f5e8;
+            border: 1px solid #4caf50;
+        }
+        .error {
+            background: #ffeaea;
+            border: 1px solid #f44336;
+        }
+        input {
+            width: 300px;
+            padding: 8px;
+            margin: 5px;
+            border: 1px solid #ddd;
+            border-radius: 3px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Monday.com Column Creation Test</h1>
+    
+    <div class="test-section">
+        <h2>Setup</h2>
+        <input type="text" id="api-token" placeholder="Enter Monday.com API Token">
+        <input type="text" id="board-id" placeholder="Enter Board ID">
+        <button onclick="saveSettings()">Save Settings</button>
+    </div>
+    
+    <div class="test-section">
+        <h2>Test Individual Column Creation</h2>
+        <button onclick="testColumn('PM', 'people')">Test PM Column (people)</button>
+        <button onclick="testColumn('photos', 'file')">Test Photos Column (file)</button>
+        <button onclick="testColumn('Status', 'status')">Test Status Column (status)</button>
+        <button onclick="testColumn('Timeline', 'timeline')">Test Timeline Column (timeline)</button>
+        <div id="column-results" class="result"></div>
+    </div>
+    
+    <div class="test-section">
+        <h2>Test All Columns Together</h2>
+        <button onclick="testAllColumns()">Create All Standard Columns</button>
+        <div id="all-results" class="result"></div>
+    </div>
+    
+    <div class="test-section">
+        <h2>Test Column Value Assignment</h2>
+        <button onclick="testColumnValues()">Test Column Value Formats</button>
+        <div id="value-results" class="result"></div>
+    </div>
+
+    <script>
+        let apiToken = '';
+        let boardId = '';
+        
+        function saveSettings() {
+            apiToken = document.getElementById('api-token').value;
+            boardId = document.getElementById('board-id').value;
+            
+            if (!apiToken || !boardId) {
+                alert('Please enter both API token and Board ID');
+                return;
+            }
+            
+            document.getElementById('column-results').innerHTML = 'Settings saved successfully!';
+            document.getElementById('column-results').className = 'result success';
+        }
+        
+        async function makeApiRequest(query, variables = {}) {
+            const response = await fetch('https://api.monday.com/v2', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': apiToken,
+                    'API-Version': '2023-10'
+                },
+                body: JSON.stringify({
+                    query,
+                    variables
+                })
+            });
+            
+            const data = await response.json();
+            
+            if (data.errors) {
+                throw new Error(JSON.stringify(data.errors, null, 2));
+            }
+            
+            return data.data;
+        }
+        
+        async function testColumn(title, columnType) {
+            if (!apiToken || !boardId) {
+                alert('Please enter API token and Board ID first');
+                return;
+            }
+            
+            const resultsDiv = document.getElementById('column-results');
+            resultsDiv.innerHTML = `Testing ${title} column (${columnType})...\n`;
+            resultsDiv.className = 'result';
+            
+            try {
+                const query = `
+                    mutation($boardId: ID!, $title: String!, $columnType: ColumnType!, $description: String) {
+                        create_column(
+                            board_id: $boardId,
+                            title: $title,
+                            column_type: $columnType,
+                            description: $description
+                        ) {
+                            id
+                            title
+                            type
+                            description
+                        }
+                    }
+                `;
+                
+                const variables = {
+                    boardId: boardId,
+                    title: title,
+                    columnType: columnType,
+                    description: `Test ${title} column`
+                };
+                
+                console.log('🔍 Testing column creation:', variables);
+                
+                const result = await makeApiRequest(query, variables);
+                
+                resultsDiv.innerHTML += `SUCCESS: ${title} column created!\n`;
+                resultsDiv.innerHTML += `ID: ${result.create_column.id}\n`;
+                resultsDiv.innerHTML += `Title: ${result.create_column.title}\n`;
+                resultsDiv.innerHTML += `Type: ${result.create_column.type}\n`;
+                resultsDiv.className = 'result success';
+                
+            } catch (error) {
+                resultsDiv.innerHTML += `ERROR: ${error.message}\n`;
+                resultsDiv.className = 'result error';
+                console.error('Column creation error:', error);
+            }
+        }
+        
+        async function testAllColumns() {
+            if (!apiToken || !boardId) {
+                alert('Please enter API token and Board ID first');
+                return;
+            }
+            
+            const resultsDiv = document.getElementById('all-results');
+            resultsDiv.innerHTML = 'Testing all columns...\n';
+            resultsDiv.className = 'result';
+            
+            const columns = [
+                { title: 'PM', type: 'people', description: 'Project Manager assignment' },
+                { title: 'photos', type: 'file', description: 'Project photos and documentation' },
+                { title: 'Status', type: 'status', description: 'Task status' },
+                { title: 'Timeline', type: 'timeline', description: 'Project timeline and dates' }
+            ];
+            
+            const createdColumns = {};
+            
+            for (const column of columns) {
+                try {
+                    const query = `
+                        mutation($boardId: ID!, $title: String!, $columnType: ColumnType!, $description: String) {
+                            create_column(
+                                board_id: $boardId,
+                                title: $title,
+                                column_type: $columnType,
+                                description: $description
+                            ) {
+                                id
+                                title
+                                type
+                                description
+                            }
+                        }
+                    `;
+                    
+                    const variables = {
+                        boardId: boardId,
+                        title: column.title,
+                        columnType: column.type,
+                        description: column.description
+                    };
+                    
+                    const result = await makeApiRequest(query, variables);
+                    createdColumns[column.title] = result.create_column;
+                    
+                    resultsDiv.innerHTML += `✅ ${column.title} (${column.type}): ${result.create_column.id}\n`;
+                    
+                } catch (error) {
+                    resultsDiv.innerHTML += `❌ ${column.title} (${column.type}): ${error.message}\n`;
+                }
+            }
+            
+            resultsDiv.innerHTML += '\n--- Summary ---\n';
+            resultsDiv.innerHTML += `Created ${Object.keys(createdColumns).length} of ${columns.length} columns\n`;
+            resultsDiv.innerHTML += JSON.stringify(createdColumns, null, 2);
+            
+            if (Object.keys(createdColumns).length === columns.length) {
+                resultsDiv.className = 'result success';
+            } else {
+                resultsDiv.className = 'result error';
+            }
+        }
+        
+        function testColumnValues() {
+            const resultsDiv = document.getElementById('value-results');
+            
+            const testValues = {
+                PM: { "personsAndTeams": [] },
+                photos: {},
+                Status: { "label": "Not Started" },
+                Timeline: { 
+                    "from": "2025-01-16", 
+                    "to": "2025-01-30" 
+                }
+            };
+            
+            resultsDiv.innerHTML = 'Column value formats:\n';
+            resultsDiv.innerHTML += JSON.stringify(testValues, null, 2);
+            resultsDiv.className = 'result';
+        }
+    </script>
+</body>
+</html> 

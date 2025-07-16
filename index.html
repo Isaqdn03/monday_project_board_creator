@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Renovation Project Manager</title>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🏠</text></svg>">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Renovation Project Manager</h1>
+            <p>Create standardized Monday.com boards for renovation projects</p>
+        </header>
+
+        <main>
+            <!-- Step 1: Project Name Input -->
+            <section id="project-setup" class="step active">
+                <h2>Step 1: Project Details</h2>
+                <div class="form-group">
+                    <label for="project-name">Project Name:</label>
+                    <input type="text" id="project-name" name="project-name" required 
+                           placeholder="Enter your renovation project name">
+                    <div class="error-message" id="project-name-error"></div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="workspace-id">Monday.com Workspace ID:</label>
+                    <input type="text" id="workspace-id" name="workspace-id" required 
+                           placeholder="Enter your Monday.com workspace ID">
+                    <div class="error-message" id="workspace-id-error"></div>
+                </div>
+
+                <button id="next-to-areas" class="btn btn-primary" disabled>Next: Select Areas</button>
+            </section>
+
+            <!-- Step 2: Area Selection -->
+            <section id="area-selection" class="step">
+                <h2>Step 2: Select Renovation Areas</h2>
+                <p>Choose the areas that will be part of your renovation project:</p>
+                
+                <div class="areas-grid" id="areas-grid">
+                    <!-- Areas will be populated by JavaScript -->
+                </div>
+                
+                <div class="error-message" id="areas-error"></div>
+                <div class="form-actions">
+                    <button id="back-to-setup" class="btn btn-secondary">Back</button>
+                    <button id="next-to-scopes" class="btn btn-primary" disabled>Next: Select Scopes</button>
+                </div>
+            </section>
+
+            <!-- Step 3: Scope Selection -->
+            <section id="scope-selection" class="step">
+                <h2>Step 3: Select Scopes for Each Area</h2>
+                <p>Choose specific renovation scopes for your selected areas:</p>
+                
+                <div id="scopes-container">
+                    <!-- Scope dropdowns will be populated by JavaScript -->
+                </div>
+                
+                <div class="error-message" id="scopes-error"></div>
+                <div class="form-actions">
+                    <button id="back-to-areas" class="btn btn-secondary">Back</button>
+                    <button id="next-to-confirmation" class="btn btn-primary" disabled>Next: Review & Confirm</button>
+                </div>
+            </section>
+
+            <!-- Step 4: Confirmation -->
+            <section id="confirmation" class="step">
+                <h2>Step 4: Review & Confirm</h2>
+                <p>Please review your selections before creating the Monday.com board:</p>
+                
+                <div class="confirmation-summary">
+                    <div class="summary-item">
+                        <strong>Project Name:</strong>
+                        <span id="confirm-project-name"></span>
+                    </div>
+                    <div class="summary-item">
+                        <strong>Workspace ID:</strong>
+                        <span id="confirm-workspace-id"></span>
+                    </div>
+                    <div class="summary-item">
+                        <strong>Selected Areas:</strong>
+                        <ul id="confirm-areas"></ul>
+                    </div>
+                    <div class="summary-item">
+                        <strong>Selected Scopes:</strong>
+                        <div id="confirm-scopes"></div>
+                    </div>
+                </div>
+                
+                <div class="form-actions">
+                    <button id="back-to-scopes" class="btn btn-secondary">Back</button>
+                    <button id="create-board" class="btn btn-primary">Create Monday.com Board</button>
+                </div>
+            </section>
+
+            <!-- Step 5: Results -->
+            <section id="results" class="step">
+                <div id="loading" class="loading hidden">
+                    <div class="spinner"></div>
+                    <p>Creating your Monday.com board...</p>
+                </div>
+                
+                <div id="success-result" class="result success hidden">
+                    <h2>✅ Board Created Successfully!</h2>
+                    <p>Your renovation project board has been created in Monday.com.</p>
+                    <div class="board-link">
+                        <strong>Board URL:</strong>
+                        <a id="board-url" href="#" target="_blank">Open Board in Monday.com</a>
+                    </div>
+                    <div class="summary-details">
+                        <p><strong>Project:</strong> <span id="result-project-name"></span></p>
+                        <p><strong>Areas Created:</strong> <span id="result-areas-count"></span></p>
+                        <p><strong>Total Tasks:</strong> <span id="result-tasks-count"></span></p>
+                    </div>
+                    <button id="create-another" class="btn btn-primary">Create Another Project</button>
+                </div>
+                
+                <div id="error-result" class="result error hidden">
+                    <h2>❌ Error Creating Board</h2>
+                    <p>There was an error creating your Monday.com board:</p>
+                    <div class="error-details">
+                        <p id="error-message"></p>
+                    </div>
+                    <div class="form-actions">
+                        <button id="retry-create" class="btn btn-primary">Try Again</button>
+                        <button id="back-to-confirmation" class="btn btn-secondary">Back to Confirmation</button>
+                    </div>
+                </div>
+            </section>
+        </main>
+
+        <footer>
+            <p>&copy; 2025 Renovation Project Manager - Internal Tool</p>
+        </footer>
+    </div>
+
+    <!-- API Token Configuration Modal -->
+    <div id="token-modal" class="modal">
+        <div class="modal-content">
+            <h3>Monday.com API Configuration</h3>
+            <p>Enter your Monday.com API token to get started:</p>
+            <div class="form-group">
+                <label for="api-token">API Token:</label>
+                <input type="password" id="api-token" name="api-token" required 
+                       placeholder="Enter your Monday.com API token">
+                <div class="error-message" id="token-error"></div>
+            </div>
+            <div class="form-actions">
+                <button id="save-token" class="btn btn-primary">Save Token</button>
+                <button id="test-token" class="btn btn-secondary">Test Connection</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="renovation-data.js"></script>
+    <script src="script.js"></script>
+</body>
+</html> 
