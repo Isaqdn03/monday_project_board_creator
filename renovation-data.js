@@ -15,6 +15,17 @@ const STANDARD_PLANNING_TASKS = [
     "Final Design Review and Sign-off"
 ];
 
+// Standard "Permitting" tasks (always included after Design and Planning)
+const STANDARD_PERMITTING_TASKS = [
+    "Submit demolition permit",
+    "Submit building permit application",
+    "Submit pool permit application",
+    "Submit electrical permit application",
+    "Submit plumbing permit application",
+    "Submit HVAC permit application",
+    "All permits approved"
+];
+
 // Complete renovation areas with their associated scopes
 const RENOVATION_AREAS = {
     "Kitchen": [
@@ -361,7 +372,7 @@ const DataHelper = {
     
     // Calculate total tasks for a project
     calculateTotalTasks: function(selectedScopes) {
-        let totalTasks = STANDARD_PLANNING_TASKS.length;
+        let totalTasks = STANDARD_PLANNING_TASKS.length + STANDARD_PERMITTING_TASKS.length;
         
         Object.values(selectedScopes).forEach(scopes => {
             if (Array.isArray(scopes)) {
@@ -533,9 +544,25 @@ const DataHelper = {
                 column_values: this.generateColumnValues('planning', task)
             });
         });
+
+        // Add Permitting group (always second)
+        apiData.groups.push({
+            title: "Permitting",
+            position: 1
+        });
+        
+        // Add permitting tasks
+        STANDARD_PERMITTING_TASKS.forEach((task, index) => {
+            apiData.items.push({
+                name: task,
+                group: "Permitting",
+                position: index,
+                column_values: this.generateColumnValues('permitting', task)
+            });
+        });
         
         // Add renovation area groups and items
-        let groupPosition = 1;
+        let groupPosition = 2;
         Object.entries(processedData.selectedScopes).forEach(([area, scopes]) => {
             apiData.groups.push({
                 title: area,
@@ -558,10 +585,26 @@ const DataHelper = {
 
     // Generate column values with smart defaults
     generateColumnValues: function(type, taskName, area = null) {
+        let taskType, priority, daysOffset;
+        
+        if (type === 'planning') {
+            taskType = 'Planning task';
+            priority = 'High';
+            daysOffset = 14;
+        } else if (type === 'permitting') {
+            taskType = 'Permitting task';
+            priority = 'High';
+            daysOffset = 21; // Permits typically need time during planning phase
+        } else {
+            taskType = 'Renovation task';
+            priority = 'Medium';
+            daysOffset = 30;
+        }
+        
         const columnValues = {
             status: { label: "Not Started" },
-            priority: { label: type === 'planning' ? "High" : "Medium" },
-            notes: `${type === 'planning' ? 'Planning task' : 'Renovation task'}: ${taskName}`
+            priority: { label: priority },
+            notes: `${taskType}: ${taskName}`
         };
         
         // Add area-specific defaults
@@ -569,8 +612,7 @@ const DataHelper = {
             columnValues.notes += ` (${area})`;
         }
         
-        // Add due date defaults (planning tasks sooner)
-        const daysOffset = type === 'planning' ? 14 : 30;
+        // Add due date defaults
         const dueDate = new Date();
         dueDate.setDate(dueDate.getDate() + daysOffset);
         columnValues.date = { date: dueDate.toISOString().split('T')[0] };
@@ -619,8 +661,9 @@ const DataHelper = {
     // Calculate total tasks for reporting
     calculateTotalTasks: function(selectedScopes) {
         const planningTasks = STANDARD_PLANNING_TASKS.length;
+        const permittingTasks = STANDARD_PERMITTING_TASKS.length;
         const renovationTasks = Object.values(selectedScopes).reduce((sum, scopes) => sum + scopes.length, 0);
-        return planningTasks + renovationTasks;
+        return planningTasks + permittingTasks + renovationTasks;
     },
 
     // Validate data structure integrity
@@ -645,6 +688,12 @@ const DataHelper = {
             throw new Error('Design and Planning group is required');
         }
         
+        // Validate Permitting group exists
+        const hasPermitting = boardStructure.groups.some(g => g.title === 'Permitting');
+        if (!hasPermitting) {
+            throw new Error('Permitting group is required');
+        }
+        
         // Validate all items have valid groups
         const groupTitles = boardStructure.groups.map(g => g.title);
         const invalidItems = boardStructure.items.filter(item => !groupTitles.includes(item.group));
@@ -664,6 +713,7 @@ if (typeof module !== 'undefined' && module.exports) {
     module.exports = {
         RENOVATION_AREAS,
         STANDARD_PLANNING_TASKS,
+        STANDARD_PERMITTING_TASKS,
         BOARD_CONFIG,
         DataHelper
     };
@@ -672,6 +722,7 @@ if (typeof module !== 'undefined' && module.exports) {
     window.RenovationData = {
         RENOVATION_AREAS,
         STANDARD_PLANNING_TASKS,
+        STANDARD_PERMITTING_TASKS,
         BOARD_CONFIG,
         DataHelper
     };

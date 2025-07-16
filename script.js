@@ -1768,16 +1768,21 @@ async function createGroupsWithSequencing(boardId) {
     const groupIds = {};
     const groups = AppState.boardStructure.groups;
     
-    // Ensure "Design and Planning" group is always first
+    // Ensure proper group ordering: Design and Planning, then Permitting, then others
     const designPlanningGroup = groups.find(g => g.title === 'Design and Planning');
-    const otherGroups = groups.filter(g => g.title !== 'Design and Planning');
+    const permittingGroup = groups.find(g => g.title === 'Permitting');
+    const otherGroups = groups.filter(g => g.title !== 'Design and Planning' && g.title !== 'Permitting');
     
     if (!designPlanningGroup) {
         throw new Error('Design and Planning group is missing from board structure');
     }
     
+    if (!permittingGroup) {
+        throw new Error('Permitting group is missing from board structure');
+    }
+    
     // Create groups in proper order with enhanced sequencing
-    const orderedGroups = [designPlanningGroup, ...otherGroups];
+    const orderedGroups = [designPlanningGroup, permittingGroup, ...otherGroups];
     
     for (let i = 0; i < orderedGroups.length; i++) {
         const group = orderedGroups[i];
@@ -1832,7 +1837,8 @@ async function createGroupsWithSequencing(boardId) {
     console.log('✅ All groups created successfully');
     console.log(`📊 Group Summary:
     - Design and Planning: ${groupIds['Design and Planning']}
-    - Renovation Areas: ${createdGroups.length - 1}`);
+    - Permitting: ${groupIds['Permitting']}
+    - Renovation Areas: ${createdGroups.length - 2}`);
     
     return groupIds;
 }
@@ -1859,8 +1865,8 @@ async function createItemsWithBatching(boardId, groupIds) {
         itemsByGroup[item.group].push(item);
     });
     
-    // Process groups in order: Design and Planning first, then others
-    const groupOrder = ['Design and Planning', ...Object.keys(itemsByGroup).filter(g => g !== 'Design and Planning')];
+    // Process groups in order: Design and Planning first, then Permitting, then others
+    const groupOrder = ['Design and Planning', 'Permitting', ...Object.keys(itemsByGroup).filter(g => g !== 'Design and Planning' && g !== 'Permitting')];
     
     let createdCount = 0;
     
