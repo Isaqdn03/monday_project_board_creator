@@ -11,7 +11,8 @@ let AppState = {
     boardStructure: null,
     createdBoardId: null,
     createdBoardUrl: null,
-    createdColumns: null
+    createdColumns: null,
+    useStepBreakdowns: true // Enable step-by-step breakdowns by default
 };
 
 // Enhanced Progress Tracker - Task 4.2
@@ -1116,6 +1117,67 @@ function populateConfirmationSummary() {
         AppState.projectName,
         AppState.selectedScopes
     );
+    
+    // Add step breakdown summary if enabled
+    if (AppState.useStepBreakdowns) {
+        addStepBreakdownSummary();
+    }
+}
+
+// Add step breakdown information to confirmation summary
+function addStepBreakdownSummary() {
+    console.log('📋 Adding step breakdown summary to confirmation...');
+    
+    const scopesDiv = document.getElementById('confirm-scopes');
+    let totalSteps = 0;
+    let scopesWithBreakdowns = 0;
+    let breakdownDetails = [];
+    
+    // Count scopes with step breakdowns
+    Object.entries(AppState.selectedScopes).forEach(([area, scopes]) => {
+        scopes.forEach(scope => {
+            if (RenovationData.StepBreakdownHelper.hasStepBreakdown(area, scope)) {
+                const breakdown = RenovationData.StepBreakdownHelper.getStepBreakdown(area, scope);
+                const stepCount = breakdown.steps.length;
+                totalSteps += stepCount;
+                scopesWithBreakdowns++;
+                breakdownDetails.push({ area, scope, steps: stepCount });
+            }
+        });
+    });
+    
+    if (totalSteps > 0) {
+        // Create step breakdown info section
+        const breakdownInfo = document.createElement('div');
+        breakdownInfo.className = 'step-breakdown-info';
+        breakdownInfo.innerHTML = `
+            <div class="breakdown-header">
+                <h4>🔧 Enhanced Step-by-Step Breakdown</h4>
+                <span class="breakdown-badge">ACTIVE</span>
+            </div>
+            <div class="breakdown-stats">
+                <div class="stat-item">
+                    <strong>${scopesWithBreakdowns}</strong> scopes with detailed steps
+                </div>
+                <div class="stat-item">
+                    <strong>${totalSteps}</strong> granular tasks will be created
+                </div>
+            </div>
+            <div class="breakdown-details">
+                <p><strong>Enhanced Scopes:</strong></p>
+                <ul class="breakdown-list">
+                    ${breakdownDetails.map(detail => 
+                        `<li>${detail.area}: ${detail.scope} <span class="step-count">(${detail.steps} steps)</span></li>`
+                    ).join('')}
+                </ul>
+            </div>
+        `;
+        
+        // Insert after the regular scopes div
+        scopesDiv.parentNode.insertBefore(breakdownInfo, scopesDiv.nextSibling);
+        
+        console.log(`✅ Step breakdown summary added: ${scopesWithBreakdowns} scopes, ${totalSteps} total steps`);
+    }
 }
 
 // Enhanced Board Creation Workflow - Task 4.2
@@ -1407,6 +1469,60 @@ function showSuccessWithTiming(executionTime) {
         const summaryDetails = successDiv.querySelector('.summary-details');
         if (summaryDetails) {
             summaryDetails.appendChild(timingDiv);
+        }
+    }
+    
+    // Add step breakdown confirmation if enabled
+    if (AppState.useStepBreakdowns) {
+        addStepBreakdownConfirmation();
+    }
+}
+
+// Add step breakdown confirmation to success results
+function addStepBreakdownConfirmation() {
+    console.log('🎉 Adding step breakdown confirmation to success results...');
+    
+    const successDiv = document.getElementById('success-result');
+    let totalSteps = 0;
+    let scopesWithBreakdowns = 0;
+    
+    // Count created step breakdowns
+    Object.entries(AppState.selectedScopes).forEach(([area, scopes]) => {
+        scopes.forEach(scope => {
+            if (RenovationData.StepBreakdownHelper.hasStepBreakdown(area, scope)) {
+                const breakdown = RenovationData.StepBreakdownHelper.getStepBreakdown(area, scope);
+                totalSteps += breakdown.steps.length;
+                scopesWithBreakdowns++;
+            }
+        });
+    });
+    
+    if (totalSteps > 0 && !successDiv.querySelector('.breakdown-confirmation')) {
+        const breakdownConfirmation = document.createElement('div');
+        breakdownConfirmation.className = 'breakdown-confirmation';
+        breakdownConfirmation.innerHTML = `
+            <div class="breakdown-success-header">
+                <h3>🔧 Step-by-Step Breakdown Created!</h3>
+            </div>
+            <div class="breakdown-success-stats">
+                <div class="success-stat">
+                    <span class="stat-number">${scopesWithBreakdowns}</span>
+                    <span class="stat-label">Scopes Enhanced</span>
+                </div>
+                <div class="success-stat">
+                    <span class="stat-number">${totalSteps}</span>
+                    <span class="stat-label">Granular Steps</span>
+                </div>
+            </div>
+            <p class="breakdown-success-description">
+                🎯 Your selected scopes have been broken down into detailed, actionable steps for better project management!
+            </p>
+        `;
+        
+        const summaryDetails = successDiv.querySelector('.summary-details');
+        if (summaryDetails) {
+            summaryDetails.appendChild(breakdownConfirmation);
+            console.log(`✅ Step breakdown confirmation added: ${scopesWithBreakdowns} scopes enhanced with ${totalSteps} steps`);
         }
     }
 }

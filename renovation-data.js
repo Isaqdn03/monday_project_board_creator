@@ -252,6 +252,255 @@ const RENOVATION_AREAS = {
     ]
 };
 
+// Detailed step-by-step breakdowns for renovation scopes
+// Each scope can optionally have a detailed breakdown into implementation steps
+const SCOPE_STEP_BREAKDOWNS = {
+    "Kitchen": {
+        "Cabinet replacement/refacing": {
+            title: "Cabinet Replacement/Refacing",
+            description: "Complete cabinet renovation workflow from planning to final installation",
+            steps: [
+                {
+                    name: "Planning & Measurement",
+                    description: "Measure space, plan layout, select cabinet style and finishes",
+                    estimatedDays: 3,
+                    priority: "High",
+                    dependencies: []
+                },
+                {
+                    name: "Demo & Removal",
+                    description: "Remove existing cabinets, countertops, and hardware",
+                    estimatedDays: 2,
+                    priority: "High",
+                    dependencies: ["Planning & Measurement"]
+                },
+                {
+                    name: "Prep the Space",
+                    description: "Repair walls, level surfaces, update electrical/plumbing rough-ins",
+                    estimatedDays: 3,
+                    priority: "High",
+                    dependencies: ["Demo & Removal"]
+                },
+                {
+                    name: "Install New Cabinets",
+                    description: "Install cabinet boxes, doors, and drawer systems",
+                    estimatedDays: 4,
+                    priority: "High",
+                    dependencies: ["Prep the Space"]
+                },
+                {
+                    name: "Add Hardware & Accessories",
+                    description: "Install cabinet hardware, drawer slides, shelving, and organizational systems",
+                    estimatedDays: 2,
+                    priority: "Medium",
+                    dependencies: ["Install New Cabinets"]
+                },
+                {
+                    name: "Final Touches",
+                    description: "Install crown molding, toe kicks, touch-up paint, and final cleanup",
+                    estimatedDays: 2,
+                    priority: "Medium",
+                    dependencies: ["Add Hardware & Accessories"]
+                }
+            ]
+        },
+        "Countertop installation (granite, quartz, marble)": {
+            title: "Countertop Installation",
+            description: "Professional stone countertop installation process",
+            steps: [
+                {
+                    name: "Material Selection & Templating",
+                    description: "Choose stone material, create precise templates of countertop areas",
+                    estimatedDays: 2,
+                    priority: "High",
+                    dependencies: []
+                },
+                {
+                    name: "Fabrication & Cutting",
+                    description: "Stone fabrication at shop, cut to exact specifications",
+                    estimatedDays: 5,
+                    priority: "High",
+                    dependencies: ["Material Selection & Templating"]
+                },
+                {
+                    name: "Prep for Installation",
+                    description: "Ensure cabinet installation complete, disconnect plumbing/electrical",
+                    estimatedDays: 1,
+                    priority: "High",
+                    dependencies: ["Fabrication & Cutting"]
+                },
+                {
+                    name: "Stone Installation",
+                    description: "Professional installation of countertop sections with seaming",
+                    estimatedDays: 1,
+                    priority: "High",
+                    dependencies: ["Prep for Installation"]
+                },
+                {
+                    name: "Plumbing & Electrical Reconnection",
+                    description: "Reconnect sink, faucet, electrical connections for appliances",
+                    estimatedDays: 1,
+                    priority: "High",
+                    dependencies: ["Stone Installation"]
+                },
+                {
+                    name: "Final Sealing & Cleanup",
+                    description: "Apply sealer to natural stone, final cleanup and inspection",
+                    estimatedDays: 1,
+                    priority: "Medium",
+                    dependencies: ["Plumbing & Electrical Reconnection"]
+                }
+            ]
+        },
+        "Backsplash installation": {
+            title: "Backsplash Installation",
+            description: "Tile or stone backsplash installation behind kitchen countertops",
+            steps: [
+                {
+                    name: "Design & Material Selection",
+                    description: "Choose backsplash material, pattern, and layout design",
+                    estimatedDays: 2,
+                    priority: "Medium",
+                    dependencies: []
+                },
+                {
+                    name: "Surface Preparation",
+                    description: "Clean and prep wall surface, apply primer if needed",
+                    estimatedDays: 1,
+                    priority: "High",
+                    dependencies: ["Design & Material Selection"]
+                },
+                {
+                    name: "Layout & Planning",
+                    description: "Mark layout lines, plan tile placement and cuts",
+                    estimatedDays: 1,
+                    priority: "High",
+                    dependencies: ["Surface Preparation"]
+                },
+                {
+                    name: "Tile Installation",
+                    description: "Install tiles with adhesive, maintain proper spacing and alignment",
+                    estimatedDays: 2,
+                    priority: "High",
+                    dependencies: ["Layout & Planning"]
+                },
+                {
+                    name: "Grouting & Sealing",
+                    description: "Apply grout, clean excess, apply sealer to grout lines",
+                    estimatedDays: 2,
+                    priority: "High",
+                    dependencies: ["Tile Installation"]
+                },
+                {
+                    name: "Final Cleanup & Protection",
+                    description: "Final cleaning, caulk edges, apply protective measures",
+                    estimatedDays: 1,
+                    priority: "Medium",
+                    dependencies: ["Grouting & Sealing"]
+                }
+            ]
+        }
+    },
+    "Bathroom": {
+        "Bathtub/shower replacement or renovation": {
+            title: "Bathtub/Shower Replacement",
+            description: "Complete bathtub or shower renovation process",
+            steps: [
+                {
+                    name: "Planning & Design",
+                    description: "Plan new tub/shower layout, select fixtures and finishes",
+                    estimatedDays: 3,
+                    priority: "High",
+                    dependencies: []
+                },
+                {
+                    name: "Demolition",
+                    description: "Remove existing tub/shower, surrounding tile and fixtures",
+                    estimatedDays: 2,
+                    priority: "High",
+                    dependencies: ["Planning & Design"]
+                },
+                {
+                    name: "Plumbing Rough-in",
+                    description: "Update plumbing lines, install new valve and drain connections",
+                    estimatedDays: 2,
+                    priority: "High",
+                    dependencies: ["Demolition"]
+                },
+                {
+                    name: "Waterproofing & Prep",
+                    description: "Install waterproof membrane, prep walls for tile or surround",
+                    estimatedDays: 2,
+                    priority: "High",
+                    dependencies: ["Plumbing Rough-in"]
+                },
+                {
+                    name: "Tub/Shower Installation",
+                    description: "Install new bathtub or shower base and fixtures",
+                    estimatedDays: 2,
+                    priority: "High",
+                    dependencies: ["Waterproofing & Prep"]
+                },
+                {
+                    name: "Tile & Finishing",
+                    description: "Install wall tile or surround, grout, and final plumbing connections",
+                    estimatedDays: 4,
+                    priority: "High",
+                    dependencies: ["Tub/Shower Installation"]
+                }
+            ]
+        },
+        "Tile work (floor and wall)": {
+            title: "Bathroom Tile Installation",
+            description: "Complete bathroom floor and wall tile installation",
+            steps: [
+                {
+                    name: "Surface Preparation",
+                    description: "Prep and level substrate, install backer board if needed",
+                    estimatedDays: 2,
+                    priority: "High",
+                    dependencies: []
+                },
+                {
+                    name: "Waterproofing",
+                    description: "Apply waterproof membrane to floor and wet areas",
+                    estimatedDays: 1,
+                    priority: "High",
+                    dependencies: ["Surface Preparation"]
+                },
+                {
+                    name: "Layout Planning",
+                    description: "Plan tile layout, mark reference lines and starting points",
+                    estimatedDays: 1,
+                    priority: "High",
+                    dependencies: ["Waterproofing"]
+                },
+                {
+                    name: "Floor Tile Installation",
+                    description: "Install floor tiles, maintain proper spacing and level",
+                    estimatedDays: 2,
+                    priority: "High",
+                    dependencies: ["Layout Planning"]
+                },
+                {
+                    name: "Wall Tile Installation", 
+                    description: "Install wall tiles around tub/shower and vanity areas",
+                    estimatedDays: 3,
+                    priority: "High",
+                    dependencies: ["Floor Tile Installation"]
+                },
+                {
+                    name: "Grouting & Sealing",
+                    description: "Apply grout to all joints, clean and seal grout lines",
+                    estimatedDays: 2,
+                    priority: "High",
+                    dependencies: ["Wall Tile Installation"]
+                }
+            ]
+        }
+    }
+};
+
 // Configuration for board creation
 const BOARD_CONFIG = {
     // Standard board columns that will be created
@@ -299,6 +548,33 @@ const BOARD_CONFIG = {
         board_kind: "public",
         folder_id: null,
         template_id: null
+    }
+};
+
+// Helper functions for step breakdown support
+const StepBreakdownHelper = {
+    // Check if a scope has step breakdown available
+    hasStepBreakdown: function(area, scope) {
+        return SCOPE_STEP_BREAKDOWNS[area] && SCOPE_STEP_BREAKDOWNS[area][scope];
+    },
+    
+    // Get step breakdown for a specific scope
+    getStepBreakdown: function(area, scope) {
+        return SCOPE_STEP_BREAKDOWNS[area] && SCOPE_STEP_BREAKDOWNS[area][scope];
+    },
+    
+    // Get all scopes with step breakdowns for an area
+    getScopesWithBreakdowns: function(area) {
+        return SCOPE_STEP_BREAKDOWNS[area] ? Object.keys(SCOPE_STEP_BREAKDOWNS[area]) : [];
+    },
+    
+    // Get count of available step breakdowns
+    getBreakdownCount: function() {
+        let count = 0;
+        Object.values(SCOPE_STEP_BREAKDOWNS).forEach(areaBreakdowns => {
+            count += Object.keys(areaBreakdowns).length;
+        });
+        return count;
     }
 };
 
@@ -370,13 +646,24 @@ const DataHelper = {
         return { valid: true, message: "Scope selection is valid." };
     },
     
-    // Calculate total tasks for a project
+    // Calculate total tasks for a project (with step breakdown support)
     calculateTotalTasks: function(selectedScopes) {
         let totalTasks = STANDARD_PLANNING_TASKS.length + STANDARD_PERMITTING_TASKS.length;
         
-        Object.values(selectedScopes).forEach(scopes => {
+        Object.entries(selectedScopes).forEach(([area, scopes]) => {
             if (Array.isArray(scopes)) {
-                totalTasks += scopes.length;
+                scopes.forEach(scope => {
+                    // Check if this scope has step-by-step breakdown
+                    const hasStepBreakdown = SCOPE_STEP_BREAKDOWNS[area] && SCOPE_STEP_BREAKDOWNS[area][scope];
+                    
+                    if (hasStepBreakdown && window.AppState?.useStepBreakdowns !== false) {
+                        // Add number of steps instead of just 1
+                        totalTasks += SCOPE_STEP_BREAKDOWNS[area][scope].steps.length;
+                    } else {
+                        // Add 1 task for the scope (original behavior)
+                        totalTasks += 1;
+                    }
+                });
             }
         });
         
@@ -563,19 +850,62 @@ const DataHelper = {
         
         // Add renovation area groups and items
         let groupPosition = 2;
+        console.log(`🔍 Processing selectedScopes:`, processedData.selectedScopes);
+        
         Object.entries(processedData.selectedScopes).forEach(([area, scopes]) => {
+            console.log(`🔍 Processing area: ${area}, scopes:`, scopes);
+            
             apiData.groups.push({
                 title: area,
                 position: groupPosition++
             });
             
-            scopes.forEach((scope, index) => {
-                apiData.items.push({
-                    name: scope,
-                    group: area,
-                    position: index,
-                    column_values: this.generateColumnValues('renovation', scope, area)
-                });
+            let itemPosition = 0;
+            scopes.forEach((scope) => {
+                // Check if this scope has step-by-step breakdown
+                const hasStepBreakdown = SCOPE_STEP_BREAKDOWNS[area] && SCOPE_STEP_BREAKDOWNS[area][scope];
+                
+                console.log(`🔍 Checking step breakdown for ${area} - ${scope}:`);
+                console.log(`   - Available breakdown areas:`, Object.keys(SCOPE_STEP_BREAKDOWNS));
+                console.log(`   - Available breakdowns for ${area}:`, SCOPE_STEP_BREAKDOWNS[area] ? Object.keys(SCOPE_STEP_BREAKDOWNS[area]) : 'NONE');
+                console.log(`   - Has breakdown data: ${!!hasStepBreakdown}`);
+                console.log(`   - AppState.useStepBreakdowns: ${window.AppState?.useStepBreakdowns}`);
+                console.log(`   - Will use steps: ${hasStepBreakdown && window.AppState?.useStepBreakdowns !== false}`);
+                
+                if (hasStepBreakdown && window.AppState?.useStepBreakdowns !== false) {
+                    // Create multiple items for each step
+                    const breakdown = SCOPE_STEP_BREAKDOWNS[area][scope];
+                    console.log(`📋 Creating step breakdown for ${scope}: ${breakdown.steps.length} steps`);
+                    
+                    breakdown.steps.forEach((step, stepIndex) => {
+                        apiData.items.push({
+                            name: step.name,
+                            group: area,
+                            position: itemPosition++,
+                            column_values: this.generateStepColumnValues(step, scope, area),
+                            metadata: {
+                                isStepBreakdown: true,
+                                parentScope: scope,
+                                stepIndex: stepIndex,
+                                stepDescription: step.description,
+                                estimatedDays: step.estimatedDays,
+                                dependencies: step.dependencies
+                            }
+                        });
+                    });
+                } else {
+                    // Create single item for scope (original behavior)
+                    apiData.items.push({
+                        name: scope,
+                        group: area,
+                        position: itemPosition++,
+                        column_values: this.generateColumnValues('renovation', scope, area),
+                        metadata: {
+                            isStepBreakdown: false,
+                            parentScope: scope
+                        }
+                    });
+                }
             });
         });
         
@@ -620,6 +950,32 @@ const DataHelper = {
         return columnValues;
     },
 
+    // Generate enhanced column values for step breakdowns
+    generateStepColumnValues: function(step, parentScope, area) {
+        const columnValues = {
+            status: { label: "Not Started" },
+            priority: { label: step.priority },
+            notes: `${step.description} | Part of: ${parentScope} (${area})`
+        };
+        
+        // Calculate realistic due dates based on estimated days
+        const dueDate = new Date();
+        dueDate.setDate(dueDate.getDate() + (step.estimatedDays || 1));
+        columnValues.date = { date: dueDate.toISOString().split('T')[0] };
+        
+        // Add dependency information to notes if present
+        if (step.dependencies && step.dependencies.length > 0) {
+            columnValues.notes += ` | Depends on: ${step.dependencies.join(', ')}`;
+        }
+        
+        // Add estimated duration to notes
+        if (step.estimatedDays) {
+            columnValues.notes += ` | Est. Duration: ${step.estimatedDays} day${step.estimatedDays > 1 ? 's' : ''}`;
+        }
+        
+        return columnValues;
+    },
+
     // Generate board structure for Monday.com API - Enhanced
     generateBoardStructure: function(projectName, selectedScopes) {
         console.log('🏗️ Generating enhanced board structure...');
@@ -645,7 +1001,8 @@ const DataHelper = {
                 items: apiData.items.map(item => ({
                     name: item.name,
                     group: item.group,
-                    column_values: item.column_values
+                    column_values: item.column_values,
+                    metadata: item.metadata // Preserve metadata for step breakdown tracking
                 }))
             };
             
@@ -714,8 +1071,10 @@ if (typeof module !== 'undefined' && module.exports) {
         RENOVATION_AREAS,
         STANDARD_PLANNING_TASKS,
         STANDARD_PERMITTING_TASKS,
+        SCOPE_STEP_BREAKDOWNS,
         BOARD_CONFIG,
-        DataHelper
+        DataHelper,
+        StepBreakdownHelper
     };
 } else {
     // Browser environment
@@ -723,7 +1082,9 @@ if (typeof module !== 'undefined' && module.exports) {
         RENOVATION_AREAS,
         STANDARD_PLANNING_TASKS,
         STANDARD_PERMITTING_TASKS,
+        SCOPE_STEP_BREAKDOWNS,
         BOARD_CONFIG,
-        DataHelper
+        DataHelper,
+        StepBreakdownHelper
     };
 } 

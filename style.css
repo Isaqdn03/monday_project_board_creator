@@ -451,6 +451,91 @@ main {
     margin-bottom: 0;
 }
 
+/* Step Breakdown Summary */
+.step-breakdown-info {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    padding: 25px;
+    border-radius: 10px;
+    margin: 20px 0;
+    box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+}
+
+.breakdown-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+.breakdown-header h4 {
+    margin: 0;
+    color: white;
+    font-size: 1.2rem;
+}
+
+.breakdown-badge {
+    background: #28a745;
+    color: white;
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 0.8rem;
+    font-weight: bold;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.breakdown-stats {
+    display: flex;
+    gap: 30px;
+    margin-bottom: 20px;
+    flex-wrap: wrap;
+}
+
+.stat-item {
+    color: rgba(255, 255, 255, 0.95);
+    font-size: 0.95rem;
+}
+
+.stat-item strong {
+    color: #ffd700;
+    font-size: 1.1rem;
+    margin-right: 5px;
+}
+
+.breakdown-details {
+    border-top: 1px solid rgba(255, 255, 255, 0.2);
+    padding-top: 20px;
+}
+
+.breakdown-details p {
+    margin: 0 0 15px 0;
+    color: rgba(255, 255, 255, 0.95);
+    font-weight: 500;
+}
+
+.breakdown-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.breakdown-list li {
+    padding: 8px 0;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    color: rgba(255, 255, 255, 0.9);
+}
+
+.breakdown-list li:last-child {
+    border-bottom: none;
+}
+
+.step-count {
+    color: #ffd700;
+    font-weight: 500;
+    font-size: 0.9rem;
+}
+
 .summary-item strong {
     color: #495057;
     display: block;
@@ -665,6 +750,56 @@ main {
 .timing-info p:first-child {
     color: #667eea;
     font-size: 1.1rem;
+}
+
+/* Step Breakdown Confirmation in Success Results */
+.breakdown-confirmation {
+    background: linear-gradient(135deg, #28a745, #20c997);
+    color: white;
+    padding: 25px;
+    border-radius: 10px;
+    margin: 20px 0;
+    box-shadow: 0 4px 15px rgba(40, 167, 69, 0.3);
+}
+
+.breakdown-success-header h3 {
+    margin: 0 0 20px 0;
+    color: white;
+    font-size: 1.3rem;
+}
+
+.breakdown-success-stats {
+    display: flex;
+    justify-content: center;
+    gap: 40px;
+    margin: 20px 0;
+}
+
+.success-stat {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 5px;
+}
+
+.stat-number {
+    font-size: 2rem;
+    font-weight: bold;
+    color: #ffd700;
+}
+
+.stat-label {
+    font-size: 0.9rem;
+    color: rgba(255, 255, 255, 0.9);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.breakdown-success-description {
+    margin: 20px 0 0 0;
+    font-size: 1rem;
+    color: rgba(255, 255, 255, 0.95);
+    font-style: italic;
 }
 
 /* Modal Styles */
