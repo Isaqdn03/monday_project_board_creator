@@ -7,7 +7,7 @@
 - **⚡ Quick Setup**: Create renovation project boards in under 5 minutes
 - **🔧 Enhanced Step Breakdowns**: Transform single scopes into 6+ detailed, actionable steps
 - **📋 Standardized Structure**: Automatic "Design and Planning" and "Permitting" phases
-- **🏗️ Complete Coverage**: 15 renovation areas with 50+ step-by-step breakdowns
+- **🏗️ Complete Coverage**: 16 renovation areas with 50+ step-by-step breakdowns
 - **🎯 Smart Project Management**: Dependencies, priorities, and realistic timelines
 - **🔄 Real-time Preview**: See enhanced scopes and step counts before creation
 - **📱 Responsive Design**: Professional UI that works on desktop, tablet, and mobile
@@ -15,7 +15,7 @@
 
 ## 📋 Renovation Areas & Step Breakdowns
 
-### **Complete Coverage (15 Areas)**
+### **Complete Coverage (16 Areas)**
 
 #### **🏠 Residential Areas**
 - **Kitchen** (5 enhanced scopes): Cabinet replacement, Countertop installation, Appliance upgrades, Backsplash installation, Paint & wall treatments
@@ -40,7 +40,11 @@
 - **Electrical Systems** (2 enhanced scopes): Panel upgrade, Wiring replacement
 - **Structural Work** (2 enhanced scopes): Load-bearing modifications, Foundation repair
 
-### **🎯 Step Breakdown Example**
+#### **🏊 Pool/Spa Areas**
+- **Pool/Spa** (1 comprehensive scope): Pool renovation (10 detailed steps)
+
+### **🎯 Step Breakdown Examples**
+
 **Kitchen Cabinet Replacement** transforms from 1 generic task into:
 1. **Planning & Measurement** (3 days, High priority)
 2. **Demo & Removal** (2 days, High priority)
@@ -48,6 +52,18 @@
 4. **Install New Cabinets** (4 days, High priority)
 5. **Add Hardware & Accessories** (2 days, Medium priority)
 6. **Final Touches** (2 days, Medium priority)
+
+**Pool Renovation** transforms from 1 generic task into:
+1. **Pool Design & Engineering Assessment** (7 days, High priority)
+2. **Pool Excavation & Site Preparation** (3 days, High priority)
+3. **Pool Steel Reinforcement Installation** (4 days, High priority)
+4. **Pool Plumbing & Electrical Rough-In** (5 days, High priority)
+5. **Pool Shotcrete Application & Curing** (4 days, High priority)
+6. **Pool Equipment Installation & Setup** (3 days, High priority)
+7. **Pool Tile Installation & Coping** (6 days, Medium priority)
+8. **Pool Decking Installation & Finishing** (5 days, Medium priority)
+9. **Pool Plaster/Finish Application** (4 days, High priority)
+10. **Pool Filling & Final Startup** (3 days, Medium priority)
 
 ## Prerequisites
 

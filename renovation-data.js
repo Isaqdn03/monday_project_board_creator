@@ -249,6 +249,9 @@ const RENOVATION_AREAS = {
         "Retaining wall construction",
         "Structural code compliance updates",
         "Building permit structural requirements"
+    ],
+    "Pool/Spa": [
+        "Pool renovation"
     ]
 };
 
@@ -2105,6 +2108,84 @@ const SCOPE_STEP_BREAKDOWNS = {
                     estimatedDays: 3,
                     priority: "Medium",
                     dependencies: ["Structural Connections"]
+                }
+            ]
+        }
+    },
+    "Pool/Spa": {
+        "Pool renovation": {
+            title: "Complete Pool Renovation",
+            description: "Comprehensive pool renovation workflow from assessment to final startup with industry-standard project management phases",
+            steps: [
+                {
+                    name: "Pool Design & Engineering Assessment",
+                    description: "Conduct comprehensive pool assessment, design renovation plan, obtain permits, and finalize material selections",
+                    estimatedDays: 7,
+                    priority: "High",
+                    dependencies: []
+                },
+                {
+                    name: "Pool Excavation & Site Preparation",
+                    description: "Drain pool completely, excavate for modifications, prepare work site, and stage materials",
+                    estimatedDays: 3,
+                    priority: "High",
+                    dependencies: ["Pool Design & Engineering Assessment"]
+                },
+                {
+                    name: "Pool Steel Reinforcement Installation",
+                    description: "Install new rebar grid, structural reinforcement, and prepare for concrete application",
+                    estimatedDays: 4,
+                    priority: "High",
+                    dependencies: ["Pool Excavation & Site Preparation"]
+                },
+                {
+                    name: "Pool Plumbing & Electrical Rough-In",
+                    description: "Install new plumbing lines, electrical conduits, lighting systems, and equipment connections",
+                    estimatedDays: 5,
+                    priority: "High",
+                    dependencies: ["Pool Steel Reinforcement Installation"]
+                },
+                {
+                    name: "Pool Shotcrete Application & Curing",
+                    description: "Apply gunite/shotcrete shell, shape pool structure, and allow proper curing time",
+                    estimatedDays: 4,
+                    priority: "High",
+                    dependencies: ["Pool Plumbing & Electrical Rough-In"]
+                },
+                {
+                    name: "Pool Equipment Installation & Setup",
+                    description: "Install pumps, filters, heaters, automation systems, and all mechanical equipment",
+                    estimatedDays: 3,
+                    priority: "High",
+                    dependencies: ["Pool Shotcrete Application & Curing"]
+                },
+                {
+                    name: "Pool Tile Installation & Coping",
+                    description: "Install waterline tile, decorative features, pool coping, and structural inspection",
+                    estimatedDays: 6,
+                    priority: "Medium",
+                    dependencies: ["Pool Equipment Installation & Setup"]
+                },
+                {
+                    name: "Pool Decking Installation & Finishing",
+                    description: "Install or renovate pool deck, drainage systems, safety features, and landscaping prep",
+                    estimatedDays: 5,
+                    priority: "Medium",
+                    dependencies: ["Pool Tile Installation & Coping"]
+                },
+                {
+                    name: "Pool Plaster/Finish Application",
+                    description: "Apply final interior finish (plaster, pebble, or tile), complete waterproofing, and cure properly",
+                    estimatedDays: 4,
+                    priority: "High",
+                    dependencies: ["Pool Decking Installation & Finishing"]
+                },
+                {
+                    name: "Pool Filling & Final Startup",
+                    description: "Fill pool, balance water chemistry, test all systems, conduct final inspection, and provide client training",
+                    estimatedDays: 3,
+                    priority: "Medium",
+                    dependencies: ["Pool Plaster/Finish Application"]
                 }
             ]
         }
