@@ -313,6 +313,13 @@ function setupEventListeners() {
             handleAreaSelection(e.target);
         }
     });
+    
+    // Step breakdown toggle
+    document.getElementById('step-breakdown-toggle').addEventListener('change', function(e) {
+        AppState.useStepBreakdowns = e.target.checked;
+        updateBreakdownPreview();
+        console.log(`🔧 Step breakdowns ${e.target.checked ? 'enabled' : 'disabled'}`);
+    });
 }
 
 // Check if API token exists - Fixed for proper modal display
@@ -747,6 +754,9 @@ function generateScopeDropdowns() {
             // Validate selection
             validateScopeSelection();
             
+            // Update breakdown preview
+            updateBreakdownPreview();
+            
             // Save state
             saveSelectionState();
         });
@@ -1121,6 +1131,43 @@ function populateConfirmationSummary() {
     // Add step breakdown summary if enabled
     if (AppState.useStepBreakdowns) {
         addStepBreakdownSummary();
+    }
+}
+
+// Update breakdown preview based on current selections
+function updateBreakdownPreview() {
+    const previewDiv = document.getElementById('breakdown-preview');
+    const previewText = document.getElementById('breakdown-preview-text');
+    
+    if (!AppState.useStepBreakdowns) {
+        previewDiv.style.display = 'none';
+        return;
+    }
+    
+    let totalSteps = 0;
+    let scopesWithBreakdowns = 0;
+    let previewScopes = [];
+    
+    // Count scopes with step breakdowns from current selections
+    Object.entries(AppState.selectedScopes).forEach(([area, scopes]) => {
+        if (Array.isArray(scopes)) {
+            scopes.forEach(scope => {
+                if (RenovationData.StepBreakdownHelper.hasStepBreakdown(area, scope)) {
+                    const breakdown = RenovationData.StepBreakdownHelper.getStepBreakdown(area, scope);
+                    const stepCount = breakdown.steps.length;
+                    totalSteps += stepCount;
+                    scopesWithBreakdowns++;
+                    previewScopes.push(`${area}: ${scope} (${stepCount} steps)`);
+                }
+            });
+        }
+    });
+    
+    if (totalSteps > 0) {
+        previewText.textContent = `${scopesWithBreakdowns} scopes will be enhanced with ${totalSteps} detailed steps`;
+        previewDiv.style.display = 'block';
+    } else {
+        previewDiv.style.display = 'none';
     }
 }
 
@@ -2356,7 +2403,8 @@ function resetApplication() {
         selectedScopes: {},
         boardStructure: null,
         createdBoardId: null,
-        createdBoardUrl: null
+        createdBoardUrl: null,
+        useStepBreakdowns: true // Keep step breakdown preference
     };
     
     // Clear form fields

@@ -60,6 +60,23 @@
                     <!-- Scope dropdowns will be populated by JavaScript -->
                 </div>
                 
+                <!-- Step Breakdown Feature Toggle -->
+                <div class="feature-toggle-section">
+                    <div class="toggle-container">
+                        <label class="toggle-switch" for="step-breakdown-toggle">
+                            <input type="checkbox" id="step-breakdown-toggle" checked>
+                            <span class="toggle-slider"></span>
+                        </label>
+                        <div class="toggle-info">
+                            <h4>🔧 Enhanced Step-by-Step Breakdowns</h4>
+                            <p>Break down selected scopes into detailed, actionable steps for better project management. When enabled, compatible scopes will be expanded into multiple granular tasks.</p>
+                            <div class="breakdown-preview" id="breakdown-preview" style="display: none;">
+                                <small><strong>Preview:</strong> <span id="breakdown-preview-text"></span></small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
                 <div class="error-message" id="scopes-error"></div>
                 <div class="form-actions">
                     <button id="back-to-areas" class="btn btn-secondary">Back</button>
