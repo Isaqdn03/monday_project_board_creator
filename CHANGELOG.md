@@ -2,6 +2,9 @@
 
 All notable changes to the Renovation Project Manager application are documented in this file.
 
+# Prompt for Context Priming
+please Read @CHANGELOG.md and @README.md so you understand this application functionalities and its files - also there are monday.com implementation guides and monday.com references in @/docs folder.
+
 ## [1.4.1] - 2025-01-27
 
 ### 🏊 **NEW AREA: Pool/Spa Renovation with 10-Step Breakdown**
