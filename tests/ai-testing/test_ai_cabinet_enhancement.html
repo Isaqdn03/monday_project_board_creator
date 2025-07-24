@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cabinet AI Enhancement Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 20px auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .test-section {
+            background: white;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .status-good { color: #28a745; font-weight: bold; }
+        .status-error { color: #dc3545; font-weight: bold; }
+        .console-output {
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 4px;
+            padding: 15px;
+            font-family: monospace;
+            white-space: pre-wrap;
+            max-height: 400px;
+            overflow-y: auto;
+            font-size: 12px;
+        }
+        button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 8px;
+        }
+        button:hover {
+            background: #0056b3;
+        }
+        .step-list {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 4px;
+            margin: 10px 0;
+        }
+        .step-item {
+            margin: 8px 0;
+            padding: 8px;
+            background: white;
+            border-radius: 4px;
+            border-left: 4px solid #007bff;
+        }
+        .ai-enhanced {
+            border-left-color: #28a745;
+            background: #f8fff9;
+        }
+    </style>
+</head>
+<body>
+    <h1>🤖 Cabinet AI Enhancement Test</h1>
+    <p>Testing if the AI enhancement now works for "shaker style" and "painted" cabinet descriptions.</p>
+
+    <div class="test-section">
+        <h2>🧪 Test Scenario</h2>
+        <p><strong>Job Description:</strong> "cabinet doors will be done in shaker style and will be painted"</p>
+        <p><strong>Expected:</strong> Should add 2 extra steps (8 total instead of 6)</p>
+        <button onclick="testCabinetEnhancement()">Test Cabinet AI Enhancement</button>
+        <div id="test-results"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>📊 Console Output</h2>
+        <div id="console-output" class="console-output"></div>
+    </div>
+
+    <!-- Load required scripts -->
+    <script src="ai-config.js"></script>
+    <script src="renovation-data.js"></script>
+
+    <script>
+        // Capture console logs
+        const originalLog = console.log;
+        const consoleOutput = document.getElementById('console-output');
+        
+        console.log = function(...args) {
+            originalLog.apply(console, args);
+            consoleOutput.textContent += args.join(' ') + '\n';
+            consoleOutput.scrollTop = consoleOutput.scrollHeight;
+        };
+
+        function addResult(message, isGood = true) {
+            const container = document.getElementById('test-results');
+            const div = document.createElement('div');
+            div.className = isGood ? 'status-good' : 'status-error';
+            div.textContent = message;
+            container.appendChild(div);
+        }
+
+        function displaySteps(steps, title) {
+            const container = document.getElementById('test-results');
+            const section = document.createElement('div');
+            section.innerHTML = `<h3>${title}</h3>`;
+            
+            const stepList = document.createElement('div');
+            stepList.className = 'step-list';
+            
+            steps.forEach((step, index) => {
+                const stepDiv = document.createElement('div');
+                stepDiv.className = `step-item ${step.researchBased ? 'ai-enhanced' : ''}`;
+                stepDiv.innerHTML = `
+                    <strong>${index + 1}. ${step.name}</strong> ${step.researchBased ? '🤖' : ''}
+                    <br><small>${step.description}</small>
+                    <br><small>Duration: ${step.estimatedDays} days, Priority: ${step.priority}</small>
+                `;
+                stepList.appendChild(stepDiv);
+            });
+            
+            section.appendChild(stepList);
+            container.appendChild(section);
+        }
+
+        async function testCabinetEnhancement() {
+            document.getElementById('test-results').innerHTML = '';
+            console.log('🧪 Testing Cabinet AI Enhancement...');
+            
+            try {
+                // Get base cabinet steps
+                const baseSteps = RenovationData.SCOPE_STEP_BREAKDOWNS['Kitchen']['Cabinet replacement/refacing'].steps;
+                console.log(`📋 Base steps: ${baseSteps.length}`);
+                
+                // Test AI enhancement
+                const jobDescription = 'cabinet doors will be done in shaker style and will be painted';
+                const location = 'Boca Raton, Florida';
+                
+                console.log('🤖 Calling AI enhancement...');
+                const aiResult = await window.AIConfigUtils.enhanceTaskBreakdown(
+                    baseSteps, 
+                    jobDescription, 
+                    'Kitchen', 
+                    'Cabinet replacement/refacing', 
+                    location
+                );
+                
+                if (aiResult && aiResult.enhancedSteps) {
+                    const originalCount = baseSteps.length;
+                    const enhancedCount = aiResult.enhancedSteps.length;
+                    
+                    console.log(`✅ Enhancement successful: ${originalCount} → ${enhancedCount} steps`);
+                    
+                    if (enhancedCount > originalCount) {
+                        addResult(`✅ SUCCESS: AI added ${enhancedCount - originalCount} extra steps!`, true);
+                        addResult(`📊 Total steps: ${enhancedCount} (was ${originalCount})`, true);
+                        
+                        // Display the enhanced steps
+                        displaySteps(aiResult.enhancedSteps, '🤖 AI-Enhanced Steps');
+                        
+                        // Show research insights
+                        if (aiResult.researchInsights && aiResult.researchInsights.length > 0) {
+                            addResult(`🔍 Generated ${aiResult.researchInsights.length} research insights`, true);
+                            aiResult.researchInsights.forEach(insight => {
+                                console.log(`   📌 ${insight.category}: ${insight.finding}`);
+                            });
+                        }
+                        
+                    } else {
+                        addResult(`❌ FAILED: No extra steps added (still ${enhancedCount})`, false);
+                        displaySteps(aiResult.enhancedSteps, '📋 Steps (No Enhancement)');
+                    }
+                } else {
+                    addResult('❌ FAILED: AI enhancement returned invalid result', false);
+                }
+                
+            } catch (error) {
+                addResult(`❌ ERROR: ${error.message}`, false);
+                console.error('Test error:', error);
+            }
+        }
+
+        // Auto-run test on load
+        window.addEventListener('load', () => {
+            setTimeout(() => {
+                console.log('🚀 Cabinet AI Enhancement Test Page Loaded');
+                console.log('Click "Test Cabinet AI Enhancement" to verify the fix...');
+            }, 500);
+        });
+    </script>
+</body>
+</html> 

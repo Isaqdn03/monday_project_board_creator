@@ -31,6 +31,9 @@ let AppState = {
     scopeLocations: {} // Object: {scopeId: location}
 };
 
+// Expose AppState to global scope for cross-file access
+window.AppState = AppState;
+
 // Enhanced Progress Tracker - Task 4.2
 class ProgressTracker {
     constructor() {
@@ -267,6 +270,9 @@ async function initializeAIFeatures() {
         console.error('❌ AI Features initialization failed:', error.message);
         showAIStatusIndicator('disabled');
     }
+    
+    // Ensure global state is synced after AI initialization
+    window.AppState = AppState;
 }
 
 // Show AI status indicator in the UI
@@ -820,11 +826,26 @@ function createSelectionCounter() {
 
 // Save selection state
 function saveSelectionState() {
-    localStorage.setItem('renovation_selection_state', JSON.stringify({
+    // Ensure global state is synced
+    window.AppState = AppState;
+    
+    const stateToSave = {
         selectedAreas: AppState.selectedAreas,
         selectedScopes: AppState.selectedScopes,
-        timestamp: new Date().toISOString()
-    }));
+        globalLocation: AppState.globalLocation,
+        aiEnhancedScopes: AppState.aiEnhancedScopes,
+        scopeJobDescriptions: AppState.scopeJobDescriptions,
+        scopeLocations: AppState.scopeLocations,
+        useStepBreakdowns: AppState.useStepBreakdowns,
+        timestamp: Date.now()
+    };
+    
+    try {
+        localStorage.setItem('renovation_app_state', JSON.stringify(stateToSave));
+        console.log('💾 Selection state saved');
+    } catch (error) {
+        console.warn('Failed to save selection state:', error);
+    }
 }
 
 // Generate scope dropdowns - Enhanced for Task 2 with AI Enhancement Toggles
@@ -1153,27 +1174,6 @@ function updateCharacterCounter(textarea, counter) {
     }
 }
 
-// Save AI enhancement state to localStorage - Task 2
-function saveSelectionState() {
-    const stateToSave = {
-        selectedAreas: AppState.selectedAreas,
-        selectedScopes: AppState.selectedScopes,
-        globalLocation: AppState.globalLocation,
-        aiEnhancedScopes: AppState.aiEnhancedScopes,
-        scopeJobDescriptions: AppState.scopeJobDescriptions,
-        scopeLocations: AppState.scopeLocations,
-        useStepBreakdowns: AppState.useStepBreakdowns,
-        timestamp: Date.now()
-    };
-    
-    try {
-        localStorage.setItem('renovation_app_state', JSON.stringify(stateToSave));
-        console.log('💾 Selection state saved');
-    } catch (error) {
-        console.warn('Failed to save selection state:', error);
-    }
-}
-
 // Load AI enhancement state from localStorage - Task 2
 function loadSavedState() {
     try {
@@ -1192,6 +1192,9 @@ function loadSavedState() {
         if (state.aiEnhancedScopes) AppState.aiEnhancedScopes = state.aiEnhancedScopes;
         if (state.scopeJobDescriptions) AppState.scopeJobDescriptions = state.scopeJobDescriptions;
         if (state.scopeLocations) AppState.scopeLocations = state.scopeLocations;
+        
+        // Ensure global state is synced
+        window.AppState = AppState;
         
         console.log('📂 Selection state loaded');
         

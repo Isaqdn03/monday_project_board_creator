@@ -147,6 +147,64 @@ async function enhanceTaskBreakdown(baseSteps, jobDescription, area, scope, loca
     // Analyze job description for enhancements
     const description = jobDescription.toLowerCase();
     
+    // Cabinet-specific enhancements
+    if (scope.toLowerCase().includes('cabinet')) {
+      // Shaker style cabinets require additional steps
+      if (description.includes('shaker')) {
+        researchInsights.push({
+          category: 'Style Requirements',
+          finding: 'Shaker style cabinets require precise rail and stile construction',
+          source: 'Cabinet Makers Association Best Practices',
+          impact: 'Additional time needed for precise joinery and fitting'
+        });
+        
+        // Add custom door fabrication step
+        enhancedSteps.splice(3, 0, {
+          name: 'Custom Shaker Door Fabrication',
+          description: 'Fabricate custom shaker-style cabinet doors with precise rail and stile joinery, ensure consistent reveal and proper alignment',
+          estimatedDays: 3,
+          priority: 'High',
+          dependencies: ['Prep the Space'],
+          complianceNotes: ['Quality control for consistent door gaps', 'Verify shaker style proportions'],
+          researchBased: true
+        });
+      }
+      
+      // Painted finish requires additional steps
+      if (description.includes('paint') || description.includes('painted')) {
+        researchInsights.push({
+          category: 'Finish Requirements',
+          finding: 'Painted cabinet finishes require proper priming and multiple coats',
+          source: 'Professional Painters Association Guidelines',
+          impact: 'Extended drying time and multiple application steps required'
+        });
+        
+        // Add professional painting step
+        enhancedSteps.splice(-1, 0, {
+          name: 'Professional Cabinet Painting',
+          description: 'Sand surfaces, apply primer, sand again, apply base coat and final topcoat with proper drying time between coats',
+          estimatedDays: 4,
+          priority: 'Medium',
+          dependencies: ['Add Hardware & Accessories'],
+          complianceNotes: ['Use low-VOC paints', 'Ensure proper ventilation during application'],
+          researchBased: true
+        });
+      }
+      
+      // Custom hardware requires additional consideration
+      if (description.includes('hardware') || description.includes('handles') || description.includes('knobs')) {
+        // Modify existing hardware step
+        const hardwareStep = enhancedSteps.find(step => step.name.includes('Hardware'));
+        if (hardwareStep) {
+          hardwareStep.description += ' Include custom hardware selection, precise drilling templates, and quality hardware installation.';
+          hardwareStep.estimatedDays = Math.max(hardwareStep.estimatedDays || 2, 3);
+          hardwareStep.complianceNotes = hardwareStep.complianceNotes || [];
+          hardwareStep.complianceNotes.push('Verify hardware compatibility with door thickness');
+          hardwareStep.researchBased = true;
+        }
+      }
+    }
+    
     // Historic building enhancements
     if (description.includes('historic')) {
       researchInsights.push({

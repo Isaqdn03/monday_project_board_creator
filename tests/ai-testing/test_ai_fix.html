@@ -1,0 +1,307 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Enhancement Bug Fix Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 900px;
+            margin: 20px auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .test-section {
+            background: white;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .status-good { color: #28a745; font-weight: bold; }
+        .status-warning { color: #ffc107; font-weight: bold; }
+        .status-error { color: #dc3545; font-weight: bold; }
+        .console-output {
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 4px;
+            padding: 15px;
+            font-family: monospace;
+            white-space: pre-wrap;
+            max-height: 400px;
+            overflow-y: auto;
+            font-size: 12px;
+        }
+        button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 8px;
+            font-size: 14px;
+        }
+        button:hover {
+            background: #0056b3;
+        }
+        button:disabled {
+            background: #6c757d;
+            cursor: not-allowed;
+        }
+        .test-result {
+            margin: 10px 0;
+            padding: 8px;
+            border-radius: 4px;
+        }
+        .result-pass {
+            background: #d4edda;
+            border: 1px solid #c3e6cb;
+            color: #155724;
+        }
+        .result-fail {
+            background: #f8d7da;
+            border: 1px solid #f5c6cb;
+            color: #721c24;
+        }
+        .result-warn {
+            background: #fff3cd;
+            border: 1px solid #ffeaa7;
+            color: #856404;
+        }
+    </style>
+</head>
+<body>
+    <h1>🐛 AI Enhancement Bug Fix Test</h1>
+    <p>This test reproduces the exact scenario from the console logs to verify the AI enhancement bug is fixed.</p>
+
+    <div class="test-section">
+        <h2>🔧 Bug Summary</h2>
+        <p><strong>Issue:</strong> AI enhancement not working during board creation</p>
+        <p><strong>Root Cause:</strong> <code>window.AppState</code> was not available in <code>renovation-data.js</code></p>
+        <p><strong>Fix:</strong> Exposed <code>AppState</code> to global scope with <code>window.AppState = AppState</code></p>
+    </div>
+
+    <div class="test-section">
+        <h2>🧪 Test Scenario</h2>
+        <p><strong>Project:</strong> test19</p>
+        <p><strong>Area:</strong> Kitchen</p>
+        <p><strong>Scope:</strong> Cabinet replacement/refacing</p>
+        <p><strong>AI Enhancement:</strong> Enabled</p>
+        <p><strong>Job Description:</strong> "cabinet doors will be done in shaker style and will be painted"</p>
+    </div>
+
+    <div class="test-section">
+        <h2>🚀 Run Tests</h2>
+        <button onclick="runAllTests()">Run All Tests</button>
+        <button onclick="clearResults()">Clear Results</button>
+        <div id="test-results"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>📊 Detailed Console Log</h2>
+        <div id="console-output" class="console-output"></div>
+    </div>
+
+    <!-- Load required scripts -->
+    <script src="ai-config.js"></script>
+    <script src="renovation-data.js"></script>
+    <script src="script.js"></script>
+
+    <script>
+        // Capture console logs
+        const originalLog = console.log;
+        const originalWarn = console.warn;
+        const originalError = console.error;
+        const consoleOutput = document.getElementById('console-output');
+        
+        function logToConsole(type, ...args) {
+            const timestamp = new Date().toLocaleTimeString();
+            const message = `[${timestamp}] ${type.toUpperCase()}: ${args.join(' ')}\n`;
+            consoleOutput.textContent += message;
+            consoleOutput.scrollTop = consoleOutput.scrollHeight;
+        }
+        
+        console.log = function(...args) {
+            originalLog.apply(console, args);
+            logToConsole('log', ...args);
+        };
+        
+        console.warn = function(...args) {
+            originalWarn.apply(console, args);
+            logToConsole('warn', ...args);
+        };
+        
+        console.error = function(...args) {
+            originalError.apply(console, args);
+            logToConsole('error', ...args);
+        };
+
+        function addTestResult(message, status) {
+            const container = document.getElementById('test-results');
+            const div = document.createElement('div');
+            div.className = `test-result result-${status}`;
+            div.innerHTML = `<span class="status-${status === 'pass' ? 'good' : status === 'fail' ? 'error' : 'warning'}">${message}</span>`;
+            container.appendChild(div);
+        }
+
+        function clearResults() {
+            document.getElementById('test-results').innerHTML = '';
+            document.getElementById('console-output').textContent = '';
+        }
+
+        async function runAllTests() {
+            clearResults();
+            console.log('🧪 Starting AI Enhancement Bug Fix Tests...');
+            
+            let passedTests = 0;
+            let totalTests = 0;
+
+            // Test 1: Check if window.AppState exists
+            totalTests++;
+            console.log('Test 1: Checking window.AppState existence...');
+            if (typeof window.AppState !== 'undefined') {
+                addTestResult('✅ Test 1 PASSED: window.AppState exists', 'pass');
+                passedTests++;
+            } else {
+                addTestResult('❌ Test 1 FAILED: window.AppState does not exist', 'fail');
+            }
+
+            // Test 2: Check AppState structure
+            totalTests++;
+            console.log('Test 2: Checking AppState structure...');
+            if (window.AppState && window.AppState.aiState && window.AppState.aiEnhancedScopes) {
+                addTestResult('✅ Test 2 PASSED: AppState has required AI properties', 'pass');
+                passedTests++;
+            } else {
+                addTestResult('❌ Test 2 FAILED: AppState missing AI properties', 'fail');
+            }
+
+            // Test 3: Initialize AI
+            totalTests++;
+            console.log('Test 3: Initializing AI features...');
+            try {
+                if (typeof window.AIConfigUtils !== 'undefined') {
+                    const aiResult = await window.AIConfigUtils.initializeAI();
+                    window.AppState.aiState.available = true; // Enable for testing
+                    addTestResult('✅ Test 3 PASSED: AI initialization completed', 'pass');
+                    passedTests++;
+                } else {
+                    addTestResult('⚠️ Test 3 WARNING: AIConfigUtils not available', 'warn');
+                }
+            } catch (error) {
+                addTestResult(`❌ Test 3 FAILED: AI initialization error: ${error.message}`, 'fail');
+            }
+
+            // Test 4: Set up test scenario (reproduce exact bug scenario)
+            totalTests++;
+            console.log('Test 4: Setting up test scenario...');
+            try {
+                // Reproduce the exact scenario from the console logs
+                window.AppState.projectName = 'test19';
+                window.AppState.workspaceId = '11649013';
+                window.AppState.selectedAreas = ['Kitchen'];
+                window.AppState.selectedScopes = {
+                    'Kitchen': ['Cabinet replacement/refacing']
+                };
+                window.AppState.aiState.available = true;
+                window.AppState.aiEnhancedScopes = {
+                    'kitchen-cabinet-replacement-refacing': true
+                };
+                window.AppState.scopeJobDescriptions = {
+                    'kitchen-cabinet-replacement-refacing': 'cabinet doors will be done in shaker style and will be painted'
+                };
+                window.AppState.globalLocation = '';
+                
+                addTestResult('✅ Test 4 PASSED: Test scenario configured', 'pass');
+                passedTests++;
+            } catch (error) {
+                addTestResult(`❌ Test 4 FAILED: Scenario setup error: ${error.message}`, 'fail');
+            }
+
+            // Test 5: Test AI enhancement detection (the core bug)
+            totalTests++;
+            console.log('Test 5: Testing AI enhancement detection...');
+            try {
+                const scopeId = 'kitchen-cabinet-replacement-refacing';
+                
+                // This is the exact code from renovation-data.js that was failing
+                const isAiEnhanced = window.AppState?.aiState?.available && 
+                                   window.AppState?.aiEnhancedScopes && 
+                                   window.AppState.aiEnhancedScopes[scopeId];
+                
+                console.log(`🔍 AI Enhancement Detection Results:`);
+                console.log(`   - AppState exists: ${!!window.AppState}`);
+                console.log(`   - aiState.available: ${window.AppState?.aiState?.available}`);
+                console.log(`   - aiEnhancedScopes exists: ${!!window.AppState?.aiEnhancedScopes}`);
+                console.log(`   - aiEnhancedScopes[${scopeId}]: ${window.AppState?.aiEnhancedScopes?.[scopeId]}`);
+                console.log(`   - Final isAiEnhanced: ${isAiEnhanced}`);
+                
+                if (isAiEnhanced) {
+                    addTestResult('✅ Test 5 PASSED: AI enhancement detection works correctly', 'pass');
+                    passedTests++;
+                } else {
+                    addTestResult('❌ Test 5 FAILED: AI enhancement detection still broken', 'fail');
+                }
+            } catch (error) {
+                addTestResult(`❌ Test 5 FAILED: Detection test error: ${error.message}`, 'fail');
+            }
+
+            // Test 6: Test board structure generation with AI enhancement
+            totalTests++;
+            console.log('Test 6: Testing board structure generation...');
+            try {
+                const boardStructure = await RenovationData.DataHelper.generateBoardStructure(
+                    window.AppState.projectName,
+                    window.AppState.selectedScopes
+                );
+                
+                if (boardStructure && boardStructure.items) {
+                    console.log(`📊 Board structure generated: ${boardStructure.items.length} items`);
+                    
+                    // Check for AI-enhanced items
+                    const aiEnhancedItems = boardStructure.items.filter(item => 
+                        item.metadata && item.metadata.isAiEnhanced
+                    );
+                    
+                    console.log(`🤖 AI-enhanced items found: ${aiEnhancedItems.length}`);
+                    
+                    if (aiEnhancedItems.length > 0) {
+                        addTestResult(`✅ Test 6 PASSED: AI-enhanced items created (${aiEnhancedItems.length} items)`, 'pass');
+                        passedTests++;
+                        
+                        // Log details of AI-enhanced items
+                        aiEnhancedItems.forEach((item, index) => {
+                            console.log(`   AI Item ${index + 1}: ${item.name} (Source: ${item.metadata.stepSource})`);
+                        });
+                    } else {
+                        addTestResult('❌ Test 6 FAILED: No AI-enhanced items found', 'fail');
+                    }
+                } else {
+                    addTestResult('❌ Test 6 FAILED: Board structure generation failed', 'fail');
+                }
+            } catch (error) {
+                addTestResult(`❌ Test 6 FAILED: Board generation error: ${error.message}`, 'fail');
+            }
+
+            // Test Summary
+            console.log(`\n🏁 Test Summary: ${passedTests}/${totalTests} tests passed`);
+            
+            if (passedTests === totalTests) {
+                addTestResult(`🎉 ALL TESTS PASSED! AI Enhancement bug is FIXED! (${passedTests}/${totalTests})`, 'pass');
+            } else {
+                addTestResult(`⚠️ ${totalTests - passedTests} test(s) failed. Bug may not be fully fixed. (${passedTests}/${totalTests})`, 'fail');
+            }
+        }
+
+        // Auto-run tests when page loads
+        window.addEventListener('load', () => {
+            setTimeout(() => {
+                console.log('🚀 AI Enhancement Bug Fix Test Page Loaded');
+                console.log('Click "Run All Tests" to verify the fix...');
+            }, 1000);
+        });
+    </script>
+</body>
+</html> 

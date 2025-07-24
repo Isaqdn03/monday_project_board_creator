@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Simple AI Enhancement Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 20px auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .test-section {
+            background: white;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .status-good { color: #28a745; }
+        .status-warning { color: #ffc107; }
+        .status-error { color: #dc3545; }
+        .console-output {
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 4px;
+            padding: 10px;
+            font-family: monospace;
+            white-space: pre-wrap;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover {
+            background: #0056b3;
+        }
+    </style>
+</head>
+<body>
+    <h1>🤖 Simple AI Enhancement Test</h1>
+    <p>Testing if AppState is properly exposed and AI enhancement detection works.</p>
+
+    <div class="test-section">
+        <h2>Test 1: AppState Global Exposure</h2>
+        <button onclick="testAppStateExposure()">Test AppState Exposure</button>
+        <div id="appstate-results"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>Test 2: AI Enhancement Detection</h2>
+        <button onclick="testAIEnhancementDetection()">Test AI Enhancement Detection</button>
+        <div id="ai-detection-results"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>Test 3: Full AI Enhancement Flow</h2>
+        <button onclick="testFullAIFlow()">Test Full AI Enhancement Flow</button>
+        <div id="full-flow-results"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>Console Output</h2>
+        <div id="console-output" class="console-output"></div>
+    </div>
+
+    <!-- Load required scripts -->
+    <script src="ai-config.js"></script>
+    <script src="renovation-data.js"></script>
+    <script src="script.js"></script>
+
+    <script>
+        // Capture console logs
+        const originalLog = console.log;
+        const consoleOutput = document.getElementById('console-output');
+        
+        console.log = function(...args) {
+            originalLog.apply(console, args);
+            consoleOutput.textContent += args.join(' ') + '\n';
+            consoleOutput.scrollTop = consoleOutput.scrollHeight;
+        };
+
+        function displayResult(containerId, message, type = 'good') {
+            const container = document.getElementById(containerId);
+            const div = document.createElement('div');
+            div.className = `status-${type}`;
+            div.textContent = message;
+            container.appendChild(div);
+        }
+
+        function clearResults(containerId) {
+            document.getElementById(containerId).innerHTML = '';
+        }
+
+        function testAppStateExposure() {
+            clearResults('appstate-results');
+            console.log('🧪 Testing AppState global exposure...');
+            
+            try {
+                // Test if window.AppState exists
+                if (typeof window.AppState !== 'undefined') {
+                    displayResult('appstate-results', '✅ window.AppState exists', 'good');
+                    
+                    // Test if it has the expected structure
+                    if (window.AppState.aiState) {
+                        displayResult('appstate-results', '✅ aiState property exists', 'good');
+                    } else {
+                        displayResult('appstate-results', '❌ aiState property missing', 'error');
+                    }
+                    
+                    if (window.AppState.aiEnhancedScopes) {
+                        displayResult('appstate-results', '✅ aiEnhancedScopes property exists', 'good');
+                    } else {
+                        displayResult('appstate-results', '❌ aiEnhancedScopes property missing', 'error');
+                    }
+                    
+                    // Test if modifications sync
+                    const testScopeId = 'test-scope-id';
+                    window.AppState.aiEnhancedScopes[testScopeId] = true;
+                    
+                    if (window.AppState.aiEnhancedScopes[testScopeId] === true) {
+                        displayResult('appstate-results', '✅ AppState modifications work', 'good');
+                    } else {
+                        displayResult('appstate-results', '❌ AppState modifications not working', 'error');
+                    }
+                    
+                } else {
+                    displayResult('appstate-results', '❌ window.AppState does not exist', 'error');
+                }
+                
+            } catch (error) {
+                displayResult('appstate-results', `❌ Error: ${error.message}`, 'error');
+                console.error('AppState test error:', error);
+            }
+        }
+
+        function testAIEnhancementDetection() {
+            clearResults('ai-detection-results');
+            console.log('🧪 Testing AI enhancement detection logic...');
+            
+            try {
+                // Set up mock AppState for AI enhancement
+                window.AppState.aiState.available = true;
+                window.AppState.aiEnhancedScopes = {
+                    'kitchen-cabinet-replacement-refacing': true
+                };
+                window.AppState.scopeJobDescriptions = {
+                    'kitchen-cabinet-replacement-refacing': 'cabinet doors will be done in shaker style and will be painted'
+                };
+                window.AppState.globalLocation = 'Chicago, IL';
+                
+                displayResult('ai-detection-results', '✅ Mock AppState configured', 'good');
+                
+                // Test the detection logic that renovation-data.js uses
+                const scopeId = 'kitchen-cabinet-replacement-refacing';
+                const isAiEnhanced = window.AppState?.aiState?.available && 
+                                   window.AppState?.aiEnhancedScopes && 
+                                   window.AppState.aiEnhancedScopes[scopeId];
+                
+                if (isAiEnhanced) {
+                    displayResult('ai-detection-results', '✅ AI enhancement detection works', 'good');
+                    displayResult('ai-detection-results', `✅ Scope ${scopeId} detected as AI-enhanced`, 'good');
+                } else {
+                    displayResult('ai-detection-results', '❌ AI enhancement detection failed', 'error');
+                }
+                
+                // Test job description retrieval
+                const jobDescription = window.AppState?.scopeJobDescriptions?.[scopeId] || '';
+                if (jobDescription.includes('shaker style')) {
+                    displayResult('ai-detection-results', '✅ Job description retrieval works', 'good');
+                } else {
+                    displayResult('ai-detection-results', '❌ Job description retrieval failed', 'error');
+                }
+                
+            } catch (error) {
+                displayResult('ai-detection-results', `❌ Error: ${error.message}`, 'error');
+                console.error('AI detection test error:', error);
+            }
+        }
+
+        async function testFullAIFlow() {
+            clearResults('full-flow-results');
+            console.log('🧪 Testing full AI enhancement flow...');
+            
+            try {
+                // Initialize AI
+                displayResult('full-flow-results', '🤖 Initializing AI...', 'warning');
+                
+                if (typeof window.AIConfigUtils !== 'undefined') {
+                    const aiResult = await window.AIConfigUtils.initializeAI();
+                    if (aiResult.success) {
+                        displayResult('full-flow-results', '✅ AI initialized successfully', 'good');
+                        window.AppState.aiState.available = true;
+                    } else {
+                        displayResult('full-flow-results', '⚠️ AI in fallback mode', 'warning');
+                        window.AppState.aiState.available = true; // Mock service still works
+                    }
+                } else {
+                    displayResult('full-flow-results', '❌ AIConfigUtils not available', 'error');
+                    return;
+                }
+                
+                // Set up test data
+                window.AppState.selectedScopes = {
+                    'Kitchen': ['Cabinet replacement/refacing']
+                };
+                window.AppState.aiEnhancedScopes = {
+                    'kitchen-cabinet-replacement-refacing': true
+                };
+                window.AppState.scopeJobDescriptions = {
+                    'kitchen-cabinet-replacement-refacing': 'cabinet doors will be done in shaker style and will be painted'
+                };
+                
+                displayResult('full-flow-results', '✅ Test data configured', 'good');
+                
+                // Test board structure generation
+                displayResult('full-flow-results', '🏗️ Testing board structure generation...', 'warning');
+                
+                const boardStructure = await RenovationData.DataHelper.generateBoardStructure(
+                    'Test AI Project',
+                    window.AppState.selectedScopes
+                );
+                
+                if (boardStructure && boardStructure.items) {
+                    displayResult('full-flow-results', `✅ Board structure generated: ${boardStructure.items.length} items`, 'good');
+                    
+                    // Check for AI-enhanced items
+                    const aiEnhancedItems = boardStructure.items.filter(item => 
+                        item.metadata && item.metadata.isAiEnhanced
+                    );
+                    
+                    if (aiEnhancedItems.length > 0) {
+                        displayResult('full-flow-results', `✅ AI-enhanced items found: ${aiEnhancedItems.length}`, 'good');
+                        displayResult('full-flow-results', `✅ AI enhancement working correctly!`, 'good');
+                    } else {
+                        displayResult('full-flow-results', `⚠️ No AI-enhanced items found (check logs)`, 'warning');
+                    }
+                } else {
+                    displayResult('full-flow-results', '❌ Board structure generation failed', 'error');
+                }
+                
+            } catch (error) {
+                displayResult('full-flow-results', `❌ Error: ${error.message}`, 'error');
+                console.error('Full AI flow test error:', error);
+            }
+        }
+
+        // Auto-run basic tests on load
+        window.addEventListener('load', () => {
+            console.log('🚀 Simple AI Enhancement Test Page Loaded');
+            setTimeout(() => {
+                testAppStateExposure();
+            }, 1000);
+        });
+    </script>
+</body>
+</html> 

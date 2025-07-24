@@ -1,0 +1,323 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>All Step Breakdowns Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1200px;
+            margin: 20px auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .test-section {
+            background: white;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .status-good { color: #28a745; font-weight: bold; }
+        .status-warning { color: #ffc107; font-weight: bold; }
+        .status-error { color: #dc3545; font-weight: bold; }
+        .console-output {
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 4px;
+            padding: 15px;
+            font-family: monospace;
+            white-space: pre-wrap;
+            max-height: 400px;
+            overflow-y: auto;
+            font-size: 12px;
+        }
+        button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 8px;
+        }
+        button:hover {
+            background: #0056b3;
+        }
+        .area-section {
+            margin: 15px 0;
+            padding: 15px;
+            border: 1px solid #dee2e6;
+            border-radius: 4px;
+        }
+        .area-header {
+            font-weight: bold;
+            font-size: 16px;
+            margin-bottom: 10px;
+            color: #495057;
+        }
+        .scope-item {
+            margin: 8px 0;
+            padding: 10px;
+            background: #f8f9fa;
+            border-radius: 4px;
+            border-left: 4px solid #007bff;
+        }
+        .scope-with-breakdown {
+            border-left-color: #28a745;
+            background: #f8fff9;
+        }
+        .scope-without-breakdown {
+            border-left-color: #dc3545;
+            background: #fff5f5;
+        }
+        .step-count {
+            font-weight: bold;
+            color: #28a745;
+        }
+        .summary-stats {
+            background: #e9ecef;
+            padding: 15px;
+            border-radius: 4px;
+            margin: 20px 0;
+        }
+        .stat-row {
+            display: flex;
+            justify-content: space-between;
+            margin: 5px 0;
+        }
+    </style>
+</head>
+<body>
+    <h1>🔧 All Step Breakdowns Test</h1>
+    <p>Comprehensive test to verify all areas and scopes have working step breakdowns.</p>
+
+    <div class="test-section">
+        <h2>🧪 Test All Step Breakdowns</h2>
+        <button onclick="testAllStepBreakdowns()">Test All Step Breakdowns</button>
+        <button onclick="clearResults()">Clear Results</button>
+        <div id="test-results"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>📊 Console Output</h2>
+        <div id="console-output" class="console-output"></div>
+    </div>
+
+    <!-- Load required scripts -->
+    <script src="renovation-data.js"></script>
+
+    <script>
+        // Capture console logs
+        const originalLog = console.log;
+        const originalWarn = console.warn;
+        const originalError = console.error;
+        const consoleOutput = document.getElementById('console-output');
+        
+        function logToConsole(type, ...args) {
+            const timestamp = new Date().toLocaleTimeString();
+            const message = `[${timestamp}] ${type.toUpperCase()}: ${args.join(' ')}\n`;
+            consoleOutput.textContent += message;
+            consoleOutput.scrollTop = consoleOutput.scrollHeight;
+        }
+        
+        console.log = function(...args) {
+            originalLog.apply(console, args);
+            logToConsole('log', ...args);
+        };
+        
+        console.warn = function(...args) {
+            originalWarn.apply(console, args);
+            logToConsole('warn', ...args);
+        };
+        
+        console.error = function(...args) {
+            originalError.apply(console, args);
+            logToConsole('error', ...args);
+        };
+
+        function clearResults() {
+            document.getElementById('test-results').innerHTML = '';
+            document.getElementById('console-output').textContent = '';
+        }
+
+        function testAllStepBreakdowns() {
+            clearResults();
+            console.log('🧪 Testing All Step Breakdowns...');
+            
+            const resultsContainer = document.getElementById('test-results');
+            
+            try {
+                // Get all renovation areas
+                const renovationAreas = RenovationData.RENOVATION_AREAS;
+                console.log(`📋 Found ${Object.keys(renovationAreas).length} renovation areas`);
+                
+                let totalAreas = 0;
+                let totalScopes = 0;
+                let scopesWithBreakdowns = 0;
+                let scopesWithoutBreakdowns = 0;
+                let totalSteps = 0;
+                const areasWithoutBreakdowns = [];
+                const detailedResults = [];
+                
+                // Test each area
+                for (const [areaName, scopes] of Object.entries(renovationAreas)) {
+                    totalAreas++;
+                    console.log(`\n🏗️ Testing area: ${areaName}`);
+                    
+                    const areaResults = {
+                        name: areaName,
+                        totalScopes: scopes.length,
+                        scopesWithBreakdowns: 0,
+                        scopesWithoutBreakdowns: 0,
+                        scopes: []
+                    };
+                    
+                    let areaHasAnyBreakdowns = false;
+                    
+                    // Test each scope in the area
+                    scopes.forEach(scope => {
+                        totalScopes++;
+                        
+                        // Check if scope has step breakdown
+                        const hasBreakdown = RenovationData.DataHelper.hasStepBreakdown(areaName, scope);
+                        const breakdown = RenovationData.DataHelper.getStepBreakdown(areaName, scope);
+                        
+                        const scopeResult = {
+                            name: scope,
+                            hasBreakdown: hasBreakdown,
+                            stepCount: hasBreakdown ? breakdown.length : 0
+                        };
+                        
+                        if (hasBreakdown) {
+                            scopesWithBreakdowns++;
+                            areaResults.scopesWithBreakdowns++;
+                            totalSteps += breakdown.length;
+                            areaHasAnyBreakdowns = true;
+                            
+                            console.log(`   ✅ ${scope}: ${breakdown.length} steps`);
+                            
+                            // Validate each step has required properties
+                            breakdown.forEach((step, index) => {
+                                if (!step.name || !step.description || !step.estimatedDays || !step.priority) {
+                                    console.warn(`      ⚠️ Step ${index + 1} missing required properties`);
+                                }
+                            });
+                        } else {
+                            scopesWithoutBreakdowns++;
+                            areaResults.scopesWithoutBreakdowns++;
+                            console.log(`   ❌ ${scope}: No step breakdown`);
+                        }
+                        
+                        areaResults.scopes.push(scopeResult);
+                    });
+                    
+                    if (!areaHasAnyBreakdowns) {
+                        areasWithoutBreakdowns.push(areaName);
+                    }
+                    
+                    detailedResults.push(areaResults);
+                }
+                
+                // Create summary
+                const summaryDiv = document.createElement('div');
+                summaryDiv.className = 'summary-stats';
+                summaryDiv.innerHTML = `
+                    <h3>📊 Test Summary</h3>
+                    <div class="stat-row">
+                        <span>Total Areas:</span>
+                        <span><strong>${totalAreas}</strong></span>
+                    </div>
+                    <div class="stat-row">
+                        <span>Total Scopes:</span>
+                        <span><strong>${totalScopes}</strong></span>
+                    </div>
+                    <div class="stat-row">
+                        <span>Scopes with Breakdowns:</span>
+                        <span class="status-good">${scopesWithBreakdowns}</span>
+                    </div>
+                    <div class="stat-row">
+                        <span>Scopes without Breakdowns:</span>
+                        <span class="status-error">${scopesWithoutBreakdowns}</span>
+                    </div>
+                    <div class="stat-row">
+                        <span>Total Steps Available:</span>
+                        <span class="step-count">${totalSteps}</span>
+                    </div>
+                    <div class="stat-row">
+                        <span>Coverage:</span>
+                        <span><strong>${((scopesWithBreakdowns / totalScopes) * 100).toFixed(1)}%</strong></span>
+                    </div>
+                `;
+                resultsContainer.appendChild(summaryDiv);
+                
+                // Create detailed results
+                detailedResults.forEach(areaResult => {
+                    const areaDiv = document.createElement('div');
+                    areaDiv.className = 'area-section';
+                    
+                    const headerDiv = document.createElement('div');
+                    headerDiv.className = 'area-header';
+                    headerDiv.innerHTML = `
+                        ${areaResult.name} 
+                        <span class="status-good">(${areaResult.scopesWithBreakdowns}/${areaResult.totalScopes} with breakdowns)</span>
+                    `;
+                    areaDiv.appendChild(headerDiv);
+                    
+                    areaResult.scopes.forEach(scope => {
+                        const scopeDiv = document.createElement('div');
+                        scopeDiv.className = `scope-item ${scope.hasBreakdown ? 'scope-with-breakdown' : 'scope-without-breakdown'}`;
+                        scopeDiv.innerHTML = `
+                            <strong>${scope.name}</strong>
+                            ${scope.hasBreakdown ? 
+                                `<span class="step-count">✅ ${scope.stepCount} steps</span>` : 
+                                '<span class="status-error">❌ No breakdown</span>'
+                            }
+                        `;
+                        areaDiv.appendChild(scopeDiv);
+                    });
+                    
+                    resultsContainer.appendChild(areaDiv);
+                });
+                
+                // Log final results
+                console.log(`\n🏁 Test Complete!`);
+                console.log(`📊 Summary:`);
+                console.log(`   - Total Areas: ${totalAreas}`);
+                console.log(`   - Total Scopes: ${totalScopes}`);
+                console.log(`   - Scopes with Breakdowns: ${scopesWithBreakdowns}`);
+                console.log(`   - Scopes without Breakdowns: ${scopesWithoutBreakdowns}`);
+                console.log(`   - Total Steps: ${totalSteps}`);
+                console.log(`   - Coverage: ${((scopesWithBreakdowns / totalScopes) * 100).toFixed(1)}%`);
+                
+                if (areasWithoutBreakdowns.length > 0) {
+                    console.warn(`⚠️ Areas with NO step breakdowns: ${areasWithoutBreakdowns.join(', ')}`);
+                }
+                
+                // Final status
+                if (scopesWithoutBreakdowns === 0) {
+                    console.log('🎉 ALL SCOPES HAVE STEP BREAKDOWNS!');
+                } else {
+                    console.warn(`⚠️ ${scopesWithoutBreakdowns} scopes still need step breakdowns`);
+                }
+                
+            } catch (error) {
+                console.error('❌ Test failed:', error);
+                const errorDiv = document.createElement('div');
+                errorDiv.className = 'status-error';
+                errorDiv.textContent = `Error: ${error.message}`;
+                resultsContainer.appendChild(errorDiv);
+            }
+        }
+
+        // Auto-run test on load
+        window.addEventListener('load', () => {
+            setTimeout(() => {
+                console.log('🚀 All Step Breakdowns Test Page Loaded');
+                console.log('Click "Test All Step Breakdowns" to verify coverage...');
+            }, 500);
+        });
+    </script>
+</body>
+</html> 
