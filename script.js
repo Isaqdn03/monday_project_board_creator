@@ -12,7 +12,23 @@ let AppState = {
     createdBoardId: null,
     createdBoardUrl: null,
     createdColumns: null,
-    useStepBreakdowns: true // Enable step-by-step breakdowns by default
+    useStepBreakdowns: true, // Enable step-by-step breakdowns by default
+    
+    // AI Enhancement State - Task 1 & 2
+    aiState: {
+        initialized: false,
+        available: false,
+        fallbackMode: false,
+        error: null,
+        enhancedScopes: [], // Track which scopes are AI-enhanced
+        apiKey: null
+    },
+    
+    // AI Enhancement Data - Task 2
+    globalLocation: '',
+    aiEnhancedScopes: {}, // Object: {scopeId: boolean}
+    scopeJobDescriptions: {}, // Object: {scopeId: description}
+    scopeLocations: {} // Object: {scopeId: location}
 };
 
 // Enhanced Progress Tracker - Task 4.2
@@ -169,6 +185,9 @@ document.addEventListener('DOMContentLoaded', function() {
 function initializeApplication() {
     console.log('🚀 Initializing Renovation Project Manager...');
     
+    // Initialize AI enhancement features - Task 1
+    initializeAIFeatures();
+    
     // Populate areas grid
     populateAreasGrid();
     
@@ -185,6 +204,118 @@ function initializeApplication() {
     addTestTokenButton();
     
     console.log('✅ Application initialized successfully');
+}
+
+// Initialize AI Enhancement Features - Task 1
+async function initializeAIFeatures() {
+    console.log('🤖 Initializing AI Enhancement Features...');
+    
+    try {
+        // Check if AI config is available
+        if (typeof window.AIConfigUtils === 'undefined') {
+            throw new Error('AI configuration utilities not loaded');
+        }
+        
+        // Initialize AI with graceful fallback
+        const initResult = await window.AIConfigUtils.initializeAI();
+        
+        console.log('🔍 AI initialization result:', {
+            success: initResult.success,
+            hasConnection: !!initResult.connection,
+            error: initResult.error,
+            fallbackMode: initResult.fallbackMode
+        });
+        
+        if (initResult.success) {
+            // AI successfully initialized
+            AppState.aiState.initialized = true;
+            AppState.aiState.available = true;
+            AppState.aiState.fallbackMode = false;
+            AppState.aiState.apiKey = window.AIConfigUtils.getApiKey();
+            
+            console.log('✅ AI Features initialized successfully!');
+            
+            // Safely access connection data
+            if (initResult.connection) {
+                console.log('Model:', initResult.connection.model);
+                console.log('Usage:', initResult.connection.usage);
+            } else {
+                console.log('AI initialized but connection details not available');
+            }
+            
+            // Show success indicator (optional)
+            showAIStatusIndicator('available');
+            
+        } else {
+            // AI initialization failed - enable fallback mode
+            AppState.aiState.initialized = true;
+            AppState.aiState.available = false;
+            AppState.aiState.fallbackMode = true;
+            AppState.aiState.error = initResult.error;
+            
+            console.warn('⚠️ AI Features unavailable, using base templates:', initResult.error);
+            showAIStatusIndicator('fallback');
+        }
+        
+    } catch (error) {
+        // Complete failure - disable AI features
+        AppState.aiState.initialized = false;
+        AppState.aiState.available = false;
+        AppState.aiState.fallbackMode = true;
+        AppState.aiState.error = error.message;
+        
+        console.error('❌ AI Features initialization failed:', error.message);
+        showAIStatusIndicator('disabled');
+    }
+}
+
+// Show AI status indicator in the UI
+function showAIStatusIndicator(status) {
+    const header = document.querySelector('header');
+    if (!header) return;
+    
+    // Remove existing indicator
+    const existing = header.querySelector('.ai-status-indicator');
+    if (existing) {
+        existing.remove();
+    }
+    
+    // Create new indicator
+    const indicator = document.createElement('div');
+    indicator.className = 'ai-status-indicator';
+    indicator.style.position = 'absolute';
+    indicator.style.top = '10px';
+    indicator.style.left = '10px';
+    indicator.style.padding = '4px 8px';
+    indicator.style.borderRadius = '4px';
+    indicator.style.fontSize = '0.8rem';
+    indicator.style.fontWeight = 'bold';
+    
+    switch (status) {
+        case 'available':
+            indicator.textContent = '🤖 AI Enhanced';
+            indicator.style.background = '#d4edda';
+            indicator.style.color = '#155724';
+            indicator.style.border = '1px solid #c3e6cb';
+            indicator.title = 'AI enhancement features are available';
+            break;
+        case 'fallback':
+            indicator.textContent = '📋 Base Templates';
+            indicator.style.background = '#fff3cd';
+            indicator.style.color = '#856404';
+            indicator.style.border = '1px solid #ffeaa7';
+            indicator.title = 'Using base templates (AI unavailable)';
+            break;
+        case 'disabled':
+            indicator.textContent = '⚠️ AI Disabled';
+            indicator.style.background = '#f8d7da';
+            indicator.style.color = '#721c24';
+            indicator.style.border = '1px solid #f5c6cb';
+            indicator.title = 'AI features disabled due to error';
+            break;
+    }
+    
+    header.appendChild(indicator);
 }
 
 // Add test button for token modal - Development helper
@@ -279,9 +410,9 @@ function setupEventListeners() {
         showStep('area-selection');
     });
     
-    document.getElementById('next-to-confirmation').addEventListener('click', () => {
+    document.getElementById('next-to-confirmation').addEventListener('click', async () => {
         if (validateScopeSelection()) {
-            populateConfirmationSummary();
+            await populateConfirmationSummary();
             showStep('confirmation');
         }
     });
@@ -696,7 +827,7 @@ function saveSelectionState() {
     }));
 }
 
-// Generate scope dropdowns - Enhanced for Task 2 with better validation
+// Generate scope dropdowns - Enhanced for Task 2 with AI Enhancement Toggles
 function generateScopeDropdowns() {
     const scopesContainer = document.getElementById('scopes-container');
     scopesContainer.innerHTML = '';
@@ -711,81 +842,367 @@ function generateScopeDropdowns() {
     instructionHeader.className = 'scope-instructions';
     instructionHeader.innerHTML = `
         <p><strong>Select specific scopes for each renovation area:</strong></p>
-        <p class="instruction-tip">💡 Tip: Hold Ctrl/Cmd to select multiple scopes per area</p>
+        <p class="instruction-tip">💡 Toggle AI Enhancement for intelligent task breakdown and compliance research</p>
     `;
     scopesContainer.appendChild(instructionHeader);
+
+    // Add global location input section (optional - can be used for all scopes)
+    const globalLocationSection = document.createElement('div');
+    globalLocationSection.className = 'global-location-section';
+    globalLocationSection.innerHTML = `
+        <h4>📍 Project Location</h4>
+        <p>Set a default location for building code compliance (can be overridden per scope)</p>
+        <input type="text" 
+               id="global-project-location" 
+               class="location-input"
+               placeholder="City, State (e.g., Chicago, IL)"
+               value="${AppState.globalLocation || ''}"
+               autocomplete="address-level2">
+        <small style="color: #666; display: block; margin-top: 5px;">
+            This helps AI research local building codes and compliance requirements
+        </small>
+    `;
+    scopesContainer.appendChild(globalLocationSection);
+
+    // Add event listener for global location
+    const globalLocationInput = globalLocationSection.querySelector('#global-project-location');
+    globalLocationInput.addEventListener('input', (e) => {
+        AppState.globalLocation = e.target.value.trim();
+        saveSelectionState();
+        
+        // Update all scope-specific location inputs if they're empty
+        document.querySelectorAll('.location-input[data-scope]').forEach(input => {
+            if (!input.value.trim()) {
+                input.placeholder = AppState.globalLocation ? 
+                    AppState.globalLocation + ' (default)' : 
+                    'City, State (e.g., Chicago, IL)';
+            }
+        });
+    });
     
     AppState.selectedAreas.forEach(area => {
         const scopes = RenovationData.DataHelper.getScopesForArea(area);
         
-        const scopeGroup = document.createElement('div');
-        scopeGroup.className = 'scope-group';
-        scopeGroup.setAttribute('data-area', area);
+        const areaGroup = document.createElement('div');
+        areaGroup.className = 'area-group';
+        areaGroup.setAttribute('data-area', area);
         
-        const selectId = `scope-${area.replace(/\s+/g, '-').toLowerCase()}`;
-        
-        scopeGroup.innerHTML = `
-            <div class="scope-group-header">
-                <h3>${area}</h3>
-                <span class="scope-count">${scopes.length} scopes available</span>
-                <div class="scope-validation" id="validation-${selectId}"></div>
-            </div>
-            <select id="${selectId}" multiple size="6" data-area="${area}" class="scope-select">
-                ${scopes.map(scope => `<option value="${scope}">${scope}</option>`).join('')}
-            </select>
-            <div class="scope-selection-info" id="info-${selectId}">
-                <span class="selected-count">0 selected</span>
-                <button type="button" class="select-all-btn" data-area="${area}">Select All</button>
-                <button type="button" class="clear-all-btn" data-area="${area}">Clear All</button>
-            </div>
+        // Area header
+        const areaHeader = document.createElement('div');
+        areaHeader.className = 'area-header';
+        areaHeader.innerHTML = `
+            <h3>${area}</h3>
+            <span class="scope-count">${scopes.length} scopes available</span>
         `;
+        areaGroup.appendChild(areaHeader);
         
-        scopesContainer.appendChild(scopeGroup);
-        
-        // Add event listener for scope selection
-        const select = scopeGroup.querySelector('select');
-        select.addEventListener('change', () => {
-            const selectedOptions = Array.from(select.selectedOptions);
-            AppState.selectedScopes[area] = selectedOptions.map(option => option.value);
-            
-            // Update selection info
-            updateScopeSelectionInfo(area, selectedOptions.length, scopes.length);
-            
-            // Validate selection
-            validateScopeSelection();
-            
-            // Update breakdown preview
-            updateBreakdownPreview();
-            
-            // Save state
-            saveSelectionState();
+        // Create individual scope items
+        scopes.forEach(scope => {
+            const scopeItem = createScopeItem(area, scope);
+            areaGroup.appendChild(scopeItem);
         });
         
-        // Add select all button functionality
-        const selectAllBtn = scopeGroup.querySelector('.select-all-btn');
-        selectAllBtn.addEventListener('click', () => {
-            Array.from(select.options).forEach(option => option.selected = true);
-            select.dispatchEvent(new Event('change'));
-        });
-        
-        // Add clear all button functionality
-        const clearAllBtn = scopeGroup.querySelector('.clear-all-btn');
-        clearAllBtn.addEventListener('click', () => {
-            Array.from(select.options).forEach(option => option.selected = false);
-            select.dispatchEvent(new Event('change'));
-        });
-        
-        // Initialize selection info
-        updateScopeSelectionInfo(area, 0, scopes.length);
+        scopesContainer.appendChild(areaGroup);
     });
     
-    // Add progress indicator
-    const progressIndicator = document.createElement('div');
-    progressIndicator.className = 'scope-progress';
-    progressIndicator.id = 'scope-progress';
-    scopesContainer.appendChild(progressIndicator);
+    // Initialize state if needed
+    if (!AppState.aiEnhancedScopes) {
+        AppState.aiEnhancedScopes = {};
+    }
+    if (!AppState.scopeJobDescriptions) {
+        AppState.scopeJobDescriptions = {};
+    }
+    if (!AppState.scopeLocations) {
+        AppState.scopeLocations = {};
+    }
     
-    updateScopeProgress();
+    // Update validation
+    validateScopeSelection();
+}
+
+// Create individual scope item with AI enhancement toggle - Task 2
+function createScopeItem(area, scope) {
+    const scopeId = `${area}-${scope}`.replace(/[^a-zA-Z0-9]/g, '-').toLowerCase();
+    const isSelected = AppState.selectedScopes[area] && AppState.selectedScopes[area].includes(scope);
+    const isAiEnhanced = AppState.aiEnhancedScopes && AppState.aiEnhancedScopes[scopeId];
+    const hasStepBreakdown = RenovationData.DataHelper.hasStepBreakdown(area, scope);
+    const stepCount = hasStepBreakdown ? RenovationData.DataHelper.getStepBreakdown(area, scope).length : 3;
+    
+    const scopeItem = document.createElement('div');
+    scopeItem.className = `scope-item ${isSelected ? 'selected' : ''} ${isAiEnhanced ? 'ai-enhanced' : ''}`;
+    scopeItem.setAttribute('data-area', area);
+    scopeItem.setAttribute('data-scope', scope);
+    scopeItem.setAttribute('data-scope-id', scopeId);
+    
+    scopeItem.innerHTML = `
+        <div class="scope-header">
+            <label class="scope-checkbox">
+                <input type="checkbox" 
+                       value="${scope}" 
+                       data-area="${area}"
+                       ${isSelected ? 'checked' : ''}>
+                <div class="scope-info">
+                    <h4>${scope}</h4>
+                    <span class="step-count">${stepCount} base steps</span>
+                </div>
+            </label>
+            
+            <div class="ai-toggle-container">
+                <label class="ai-toggle-switch">
+                    <input type="checkbox" 
+                           class="ai-enhance-toggle" 
+                           data-scope-id="${scopeId}"
+                           ${isAiEnhanced ? 'checked' : ''}
+                           ${!AppState.aiState.available ? 'disabled' : ''}>
+                    <span class="ai-toggle-slider">
+                        <span class="ai-toggle-icon base">📋</span>
+                        <span class="ai-toggle-icon robot">🤖</span>
+                    </span>
+                </label>
+                <span class="ai-toggle-label">
+                    ${AppState.aiState.available ? 'AI Enhance' : 'AI Unavailable'}
+                </span>
+            </div>
+        </div>
+        
+        <div class="ai-enhancement-panel ${isAiEnhanced ? 'expanded' : ''}" id="panel-${scopeId}">
+            <div class="ai-panel-header">
+                <span class="ai-icon">🤖</span>
+                <h5>AI Enhancement Settings</h5>
+            </div>
+            
+            <p class="ai-panel-description">
+                Describe special requirements, constraints, or unique aspects of this ${scope.toLowerCase()} work to help AI customize the task breakdown.
+            </p>
+            
+            <div class="job-description-container">
+                <label class="job-description-label" for="desc-${scopeId}">
+                    🎯 Project Description & Special Requirements
+                </label>
+                <textarea 
+                    id="desc-${scopeId}"
+                    class="job-description-textarea"
+                    data-scope-id="${scopeId}"
+                    placeholder="Examples for ${scope.toLowerCase()}:
+• Historic 1920s building with original plaster walls
+• Requires ADA compliance modifications
+• Client prefers eco-friendly materials only
+• Load-bearing wall modifications needed
+• Unique site conditions or restrictions"
+                    maxlength="1000">${AppState.scopeJobDescriptions?.[scopeId] || ''}</textarea>
+                <div class="character-counter">
+                    <span id="counter-${scopeId}">0</span>/1000 characters
+                </div>
+            </div>
+            
+            <div class="location-container">
+                <label class="location-label" for="loc-${scopeId}">
+                    📍 Specific Location (optional)
+                </label>
+                <input type="text" 
+                       id="loc-${scopeId}"
+                       class="location-input"
+                       data-scope="${scopeId}"
+                       placeholder="${AppState.globalLocation || 'City, State (e.g., Chicago, IL)'}"
+                       value="${AppState.scopeLocations?.[scopeId] || ''}"
+                       autocomplete="address-level2">
+                <small style="color: #666; display: block; margin-top: 5px;">
+                    Override global location for scope-specific building codes
+                </small>
+            </div>
+            
+            <div class="ai-enhancement-preview">
+                <div class="ai-preview-header">
+                    <span class="ai-preview-icon">🔍</span>
+                    <span>AI will research and enhance:</span>
+                </div>
+                <ul class="ai-enhancement-list">
+                    <li>Local building codes and compliance requirements</li>
+                    <li>Current industry best practices for ${scope.toLowerCase()}</li>
+                    <li>Safety regulations and OSHA requirements</li>
+                    <li>Material recommendations and alternatives</li>
+                    <li>Permit requirements and procedures</li>
+                </ul>
+            </div>
+        </div>
+    `;
+    
+    // Add event listeners
+    setupScopeItemEventListeners(scopeItem, area, scope, scopeId);
+    
+    return scopeItem;
+}
+
+// Setup event listeners for scope item - Task 2
+function setupScopeItemEventListeners(scopeItem, area, scope, scopeId) {
+    // Scope selection checkbox
+    const checkbox = scopeItem.querySelector('input[type="checkbox"][data-area]');
+    checkbox.addEventListener('change', (e) => {
+        const isChecked = e.target.checked;
+        
+        // Update AppState
+        if (!AppState.selectedScopes[area]) {
+            AppState.selectedScopes[area] = [];
+        }
+        
+        if (isChecked) {
+            if (!AppState.selectedScopes[area].includes(scope)) {
+                AppState.selectedScopes[area].push(scope);
+            }
+            scopeItem.classList.add('selected');
+        } else {
+            AppState.selectedScopes[area] = AppState.selectedScopes[area].filter(s => s !== scope);
+            scopeItem.classList.remove('selected');
+            
+            // Also disable AI enhancement if scope is deselected
+            const aiToggle = scopeItem.querySelector('.ai-enhance-toggle');
+            if (aiToggle.checked) {
+                aiToggle.checked = false;
+                aiToggle.dispatchEvent(new Event('change'));
+            }
+        }
+        
+        // Update validation and save state
+        validateScopeSelection();
+        updateBreakdownPreview();
+        saveSelectionState();
+    });
+    
+    // AI enhancement toggle
+    const aiToggle = scopeItem.querySelector('.ai-enhance-toggle');
+    aiToggle.addEventListener('change', (e) => {
+        const isEnabled = e.target.checked;
+        const panel = scopeItem.querySelector('.ai-enhancement-panel');
+        
+        // Ensure scope is selected before enabling AI
+        if (isEnabled && !checkbox.checked) {
+            checkbox.checked = true;
+            checkbox.dispatchEvent(new Event('change'));
+        }
+        
+        // Update AppState
+        if (!AppState.aiEnhancedScopes) {
+            AppState.aiEnhancedScopes = {};
+        }
+        AppState.aiEnhancedScopes[scopeId] = isEnabled;
+        
+        // Update UI
+        if (isEnabled) {
+            scopeItem.classList.add('ai-enhanced');
+            panel.classList.add('expanded');
+        } else {
+            scopeItem.classList.remove('ai-enhanced');
+            panel.classList.remove('expanded');
+        }
+        
+        saveSelectionState();
+    });
+    
+    // Job description textarea
+    const textarea = scopeItem.querySelector('.job-description-textarea');
+    const counter = scopeItem.querySelector(`#counter-${scopeId}`);
+    
+    // Update character counter initially
+    updateCharacterCounter(textarea, counter);
+    
+    textarea.addEventListener('input', (e) => {
+        const text = e.target.value;
+        
+        // Update AppState
+        if (!AppState.scopeJobDescriptions) {
+            AppState.scopeJobDescriptions = {};
+        }
+        AppState.scopeJobDescriptions[scopeId] = text;
+        
+        // Update character counter
+        updateCharacterCounter(textarea, counter);
+        
+        saveSelectionState();
+    });
+    
+    // Location input
+    const locationInput = scopeItem.querySelector('.location-input[data-scope]');
+    locationInput.addEventListener('input', (e) => {
+        const location = e.target.value.trim();
+        
+        // Update AppState
+        if (!AppState.scopeLocations) {
+            AppState.scopeLocations = {};
+        }
+        AppState.scopeLocations[scopeId] = location;
+        
+        saveSelectionState();
+    });
+}
+
+// Update character counter for textarea
+function updateCharacterCounter(textarea, counter) {
+    const length = textarea.value.length;
+    const maxLength = parseInt(textarea.getAttribute('maxlength')) || 1000;
+    
+    counter.textContent = length;
+    
+    // Update counter styling based on length
+    const parent = counter.parentElement;
+    parent.classList.remove('warning', 'error');
+    
+    if (length > maxLength * 0.9) {
+        parent.classList.add('error');
+    } else if (length > maxLength * 0.75) {
+        parent.classList.add('warning');
+    }
+}
+
+// Save AI enhancement state to localStorage - Task 2
+function saveSelectionState() {
+    const stateToSave = {
+        selectedAreas: AppState.selectedAreas,
+        selectedScopes: AppState.selectedScopes,
+        globalLocation: AppState.globalLocation,
+        aiEnhancedScopes: AppState.aiEnhancedScopes,
+        scopeJobDescriptions: AppState.scopeJobDescriptions,
+        scopeLocations: AppState.scopeLocations,
+        useStepBreakdowns: AppState.useStepBreakdowns,
+        timestamp: Date.now()
+    };
+    
+    try {
+        localStorage.setItem('renovation_app_state', JSON.stringify(stateToSave));
+        console.log('💾 Selection state saved');
+    } catch (error) {
+        console.warn('Failed to save selection state:', error);
+    }
+}
+
+// Load AI enhancement state from localStorage - Task 2
+function loadSavedState() {
+    try {
+        const savedState = localStorage.getItem('renovation_app_state');
+        if (!savedState) return;
+        
+        const state = JSON.parse(savedState);
+        
+        // Load basic state
+        if (state.selectedAreas) AppState.selectedAreas = state.selectedAreas;
+        if (state.selectedScopes) AppState.selectedScopes = state.selectedScopes;
+        if (state.useStepBreakdowns !== undefined) AppState.useStepBreakdowns = state.useStepBreakdowns;
+        
+        // Load AI enhancement state
+        if (state.globalLocation) AppState.globalLocation = state.globalLocation;
+        if (state.aiEnhancedScopes) AppState.aiEnhancedScopes = state.aiEnhancedScopes;
+        if (state.scopeJobDescriptions) AppState.scopeJobDescriptions = state.scopeJobDescriptions;
+        if (state.scopeLocations) AppState.scopeLocations = state.scopeLocations;
+        
+        console.log('📂 Selection state loaded');
+        
+        // Update UI if on scope selection step
+        if (AppState.currentStep === 'scope-selection') {
+            generateScopeDropdowns();
+        }
+        
+    } catch (error) {
+        console.warn('Failed to load saved state:', error);
+    }
 }
 
 // Update scope selection info
@@ -1094,8 +1511,8 @@ function loadSavedState() {
     }
 }
 
-// Populate confirmation summary
-function populateConfirmationSummary() {
+// Populate confirmation summary with AI enhancement support
+async function populateConfirmationSummary() {
     document.getElementById('confirm-project-name').textContent = AppState.projectName;
     document.getElementById('confirm-workspace-id').textContent = AppState.workspaceId;
     
@@ -1122,11 +1539,13 @@ function populateConfirmationSummary() {
         scopesDiv.appendChild(areaDiv);
     });
     
-    // Generate board structure
-    AppState.boardStructure = RenovationData.DataHelper.generateBoardStructure(
+    // Generate board structure with AI enhancement
+    console.log('🔄 Generating board structure with potential AI enhancements...');
+    AppState.boardStructure = await RenovationData.DataHelper.generateBoardStructure(
         AppState.projectName,
         AppState.selectedScopes
     );
+    console.log('✅ Board structure generated');
     
     // Add step breakdown summary if enabled
     if (AppState.useStepBreakdowns) {
@@ -1659,8 +2078,8 @@ async function validatePrerequisites() {
 async function prepareDataStructure() {
     console.log('🏗️ Preparing enhanced data structure...');
     
-    // Generate enhanced board structure
-    AppState.boardStructure = RenovationData.DataHelper.generateBoardStructure(
+    // Generate enhanced board structure with AI support
+    AppState.boardStructure = await RenovationData.DataHelper.generateBoardStructure(
         AppState.projectName,
         AppState.selectedScopes
     );

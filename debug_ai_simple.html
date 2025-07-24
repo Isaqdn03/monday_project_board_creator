@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Debug - Simple</title>
+    <style>
+        body { font-family: monospace; padding: 20px; background: #f5f5f5; }
+        .log { background: white; padding: 20px; border-radius: 8px; margin: 10px 0; }
+        .error { color: red; }
+        .success { color: green; }
+        .warning { color: orange; }
+        .btn { background: #007bff; color: white; border: none; padding: 10px 20px; border-radius: 4px; cursor: pointer; margin: 5px; }
+    </style>
+</head>
+<body>
+    <h1>🔧 AI Initialization Debug</h1>
+    
+    <div id="debug-log" class="log"></div>
+    
+    <button class="btn" onclick="testAIInit()">Test AI Initialization</button>
+    <button class="btn" onclick="clearStorage()">Clear All Storage</button>
+    <button class="btn" onclick="checkStorage()">Check Storage</button>
+
+    <script src="ai-config.js"></script>
+    <script>
+        function log(message, type = 'info') {
+            const logDiv = document.getElementById('debug-log');
+            const p = document.createElement('p');
+            p.className = type;
+            p.textContent = `[${new Date().toLocaleTimeString()}] ${message}`;
+            logDiv.appendChild(p);
+            console.log(message);
+        }
+
+        function checkStorage() {
+            log('=== CHECKING STORAGE ===');
+            const apiKey = localStorage.getItem('claude_api_key');
+            if (apiKey) {
+                log(`✅ API Key found: ${apiKey.substring(0, 10)}...`, 'success');
+                log(`Key length: ${apiKey.length}`, 'info');
+                log(`Key format valid: ${apiKey.startsWith('sk-ant-')}`, apiKey.startsWith('sk-ant-') ? 'success' : 'error');
+            } else {
+                log('❌ No API key in storage', 'warning');
+            }
+        }
+
+        function clearStorage() {
+            localStorage.clear();
+            log('🗑️ All localStorage cleared', 'warning');
+        }
+
+        async function testAIInit() {
+            log('=== STARTING AI INITIALIZATION TEST ===');
+            
+            try {
+                // Check if AIConfigUtils is available
+                if (typeof AIConfigUtils === 'undefined') {
+                    log('❌ AIConfigUtils not loaded', 'error');
+                    return;
+                }
+                log('✅ AIConfigUtils loaded', 'success');
+
+                // Check current API key
+                const currentKey = AIConfigUtils.getApiKey();
+                if (currentKey) {
+                    log(`🔑 Current API key: ${currentKey.substring(0, 10)}...`, 'info');
+                } else {
+                    log('🔑 No current API key found', 'warning');
+                }
+
+                // Test the initialization process
+                log('🚀 Calling AIConfigUtils.initializeAI()...', 'info');
+                
+                const result = await AIConfigUtils.initializeAI();
+                
+                log('📊 INITIALIZATION RESULT:', 'info');
+                log(`- success: ${result.success}`, result.success ? 'success' : 'error');
+                log(`- error: ${result.error || 'none'}`, result.error ? 'error' : 'success');
+                log(`- fallbackMode: ${result.fallbackMode || 'false'}`, 'info');
+                log(`- hasConnection: ${!!result.connection}`, !!result.connection ? 'success' : 'warning');
+                
+                if (result.connection) {
+                    log(`- connection.success: ${result.connection.success}`, 'info');
+                    log(`- connection.model: ${result.connection.model || 'undefined'}`, 'info');
+                    log(`- connection.usage: ${JSON.stringify(result.connection.usage)}`, 'info');
+                } else {
+                    log('⚠️ Connection object is missing/undefined', 'warning');
+                }
+
+                // Test direct API connection if we have a key
+                const testKey = AIConfigUtils.getApiKey();
+                if (testKey) {
+                    log('🔍 Testing direct API connection...', 'info');
+                    try {
+                        const directResult = await AIConfigUtils.testApiConnection(testKey);
+                        log('✅ Direct API test successful', 'success');
+                        log(`Direct result: ${JSON.stringify(directResult, null, 2)}`, 'info');
+                    } catch (directError) {
+                        log(`❌ Direct API test failed: ${directError.message}`, 'error');
+                    }
+                }
+
+            } catch (error) {
+                log(`❌ Test failed with error: ${error.message}`, 'error');
+                log(`Error stack: ${error.stack}`, 'error');
+            }
+        }
+
+        // Auto-run on load
+        document.addEventListener('DOMContentLoaded', () => {
+            log('🌟 Debug page loaded');
+            checkStorage();
+        });
+    </script>
+</body>
+</html> 

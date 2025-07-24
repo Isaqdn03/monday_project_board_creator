@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Integration Test - Task 1</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .test-container {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+        .test-result {
+            padding: 10px;
+            border-radius: 4px;
+            margin: 10px 0;
+            font-weight: bold;
+        }
+        .success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        .error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        .warning {
+            background: #fff3cd;
+            color: #856404;
+            border: 1px solid #ffeaa7;
+        }
+        .btn {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        .btn:hover { background: #0056b3; }
+        .btn-secondary { background: #6c757d; }
+        .btn-secondary:hover { background: #5a6268; }
+        pre {
+            background: #f8f9fa;
+            padding: 10px;
+            border-radius: 4px;
+            overflow-x: auto;
+            font-size: 0.9em;
+        }
+        .test-section {
+            border-left: 4px solid #007bff;
+            padding-left: 15px;
+            margin: 20px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="test-container">
+        <h1>🤖 AI Integration Test - Task 1</h1>
+        <p>Testing Claude Sonnet 3.5 API integration and fallback mechanisms</p>
+        
+        <div class="test-section">
+            <h3>Configuration Tests</h3>
+            <button class="btn" onclick="testConfiguration()">Test AI Configuration</button>
+            <button class="btn btn-secondary" onclick="testApiKeyValidation()">Test API Key Validation</button>
+            <div id="config-results"></div>
+        </div>
+
+        <div class="test-section">
+            <h3>Connection Tests</h3>
+            <button class="btn" onclick="testConnectionWithValidKey()">Test with Valid Key</button>
+            <button class="btn btn-secondary" onclick="testConnectionFallback()">Test Fallback Mode</button>
+            <div id="connection-results"></div>
+        </div>
+
+        <div class="test-section">
+            <h3>Integration Tests</h3>
+            <button class="btn" onclick="testFullInitialization()">Test Full AI Initialization</button>
+            <button class="btn btn-secondary" onclick="clearStoredData()">Clear Stored Data</button>
+            <div id="integration-results"></div>
+        </div>
+
+        <div class="test-section">
+            <h3>Manual API Key Test</h3>
+            <p>Enter a Claude API key to test manually:</p>
+            <input type="password" id="manual-api-key" placeholder="sk-ant-..." style="width: 300px; padding: 8px; margin: 5px;">
+            <button class="btn" onclick="testManualApiKey()">Test Manual Key</button>
+            <div id="manual-results"></div>
+        </div>
+    </div>
+
+    <script src="ai-config.js"></script>
+    <script>
+        // Test Results Display
+        function showResult(containerId, message, type = 'success') {
+            const container = document.getElementById(containerId);
+            const resultDiv = document.createElement('div');
+            resultDiv.className = `test-result ${type}`;
+            resultDiv.innerHTML = message;
+            container.appendChild(resultDiv);
+        }
+
+        function clearResults(containerId) {
+            document.getElementById(containerId).innerHTML = '';
+        }
+
+        // Configuration Tests
+        async function testConfiguration() {
+            clearResults('config-results');
+            
+            try {
+                // Test 1: Check if AI_CONFIG is available
+                if (typeof AI_CONFIG === 'undefined') {
+                    throw new Error('AI_CONFIG not loaded');
+                }
+                showResult('config-results', '✅ AI_CONFIG loaded successfully', 'success');
+
+                // Test 2: Validate configuration structure
+                const requiredKeys = ['claude', 'fallback', 'performance', 'security'];
+                const missingKeys = requiredKeys.filter(key => !AI_CONFIG[key]);
+                if (missingKeys.length > 0) {
+                    throw new Error(`Missing config keys: ${missingKeys.join(', ')}`);
+                }
+                showResult('config-results', '✅ Configuration structure valid', 'success');
+
+                // Test 3: Check Claude model configuration
+                if (AI_CONFIG.claude.model !== 'claude-3-5-sonnet-20241022') {
+                    showResult('config-results', '⚠️ Unexpected model configuration', 'warning');
+                } else {
+                    showResult('config-results', '✅ Claude Sonnet 3.5 model configured', 'success');
+                }
+
+                // Test 4: Check temperature and tokens
+                showResult('config-results', `✅ Temperature: ${AI_CONFIG.claude.temperature}, Max Tokens: ${AI_CONFIG.claude.maxTokens}`, 'success');
+
+            } catch (error) {
+                showResult('config-results', `❌ Configuration test failed: ${error.message}`, 'error');
+            }
+        }
+
+        async function testApiKeyValidation() {
+            clearResults('config-results');
+            
+            try {
+                if (typeof AIConfigUtils === 'undefined') {
+                    throw new Error('AIConfigUtils not available');
+                }
+
+                // Test valid key format
+                const validKey = 'sk-ant-api03-1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef';
+                const validResult = AIConfigUtils.validateApiKey(validKey);
+                showResult('config-results', `✅ Valid key validation: ${validResult}`, validResult ? 'success' : 'error');
+
+                // Test invalid key formats
+                const invalidKeys = ['', 'invalid', 'sk-wrong-format', 'sk-ant-short'];
+                invalidKeys.forEach(key => {
+                    const result = AIConfigUtils.validateApiKey(key);
+                    showResult('config-results', `✅ Invalid key '${key}' rejected: ${!result}`, !result ? 'success' : 'error');
+                });
+
+            } catch (error) {
+                showResult('config-results', `❌ API key validation test failed: ${error.message}`, 'error');
+            }
+        }
+
+        // Connection Tests
+        async function testConnectionWithValidKey() {
+            clearResults('connection-results');
+            
+            const apiKey = document.getElementById('manual-api-key').value.trim();
+            if (!apiKey) {
+                showResult('connection-results', '⚠️ Please enter an API key in the manual test section first', 'warning');
+                return;
+            }
+
+            try {
+                showResult('connection-results', '🔄 Testing connection...', 'warning');
+                const result = await AIConfigUtils.testApiConnection(apiKey);
+                
+                showResult('connection-results', '✅ API connection successful!', 'success');
+                showResult('connection-results', `Model: ${result.model}`, 'success');
+                showResult('connection-results', `Usage: ${JSON.stringify(result.usage)}`, 'success');
+                
+            } catch (error) {
+                showResult('connection-results', `❌ Connection failed: ${error.message}`, 'error');
+            }
+        }
+
+        async function testConnectionFallback() {
+            clearResults('connection-results');
+            
+            try {
+                // Test with invalid key to trigger fallback
+                showResult('connection-results', '🔄 Testing fallback with invalid key...', 'warning');
+                await AIConfigUtils.testApiConnection('sk-ant-invalid-key-for-testing');
+                
+                showResult('connection-results', '❌ Expected failure did not occur', 'error');
+                
+            } catch (error) {
+                showResult('connection-results', '✅ Fallback triggered correctly', 'success');
+                showResult('connection-results', `Error handled: ${error.message}`, 'success');
+            }
+        }
+
+        // Integration Tests
+        async function testFullInitialization() {
+            clearResults('integration-results');
+            
+            try {
+                showResult('integration-results', '🔄 Testing full AI initialization...', 'warning');
+                
+                const result = await AIConfigUtils.initializeAI();
+                
+                if (result.success) {
+                    showResult('integration-results', '✅ AI initialization successful!', 'success');
+                    showResult('integration-results', `Connection: ${JSON.stringify(result.connection, null, 2)}`, 'success');
+                } else {
+                    showResult('integration-results', '⚠️ AI unavailable, fallback mode active', 'warning');
+                    showResult('integration-results', `Error: ${result.error}`, 'warning');
+                    showResult('integration-results', '✅ Fallback handling working correctly', 'success');
+                }
+                
+            } catch (error) {
+                showResult('integration-results', `❌ Initialization test failed: ${error.message}`, 'error');
+            }
+        }
+
+        async function clearStoredData() {
+            try {
+                localStorage.removeItem('claude_api_key');
+                showResult('integration-results', '✅ Stored API key cleared', 'success');
+            } catch (error) {
+                showResult('integration-results', `❌ Failed to clear data: ${error.message}`, 'error');
+            }
+        }
+
+        // Manual API Key Test
+        async function testManualApiKey() {
+            clearResults('manual-results');
+            
+            const apiKey = document.getElementById('manual-api-key').value.trim();
+            if (!apiKey) {
+                showResult('manual-results', '⚠️ Please enter an API key', 'warning');
+                return;
+            }
+
+            try {
+                // Validate format first
+                if (!AIConfigUtils.validateApiKey(apiKey)) {
+                    showResult('manual-results', '❌ Invalid API key format', 'error');
+                    return;
+                }
+
+                showResult('manual-results', '🔄 Testing API key...', 'warning');
+                
+                const result = await AIConfigUtils.testApiConnection(apiKey);
+                
+                showResult('manual-results', '✅ API key is valid and working!', 'success');
+                showResult('manual-results', `<pre>${JSON.stringify(result, null, 2)}</pre>`, 'success');
+                
+                // Store the key
+                AIConfigUtils.storeApiKey(apiKey);
+                showResult('manual-results', '✅ API key stored for future use', 'success');
+                
+            } catch (error) {
+                showResult('manual-results', `❌ API key test failed: ${error.message}`, 'error');
+            }
+        }
+
+        // Auto-run basic tests on load
+        document.addEventListener('DOMContentLoaded', () => {
+            console.log('🧪 AI Integration Test Page Loaded');
+            setTimeout(() => {
+                testConfiguration();
+            }, 500);
+        });
+    </script>
+</body>
+</html> 

@@ -1,0 +1,322 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Toggle UI Test - Task 2</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .test-container {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+        .test-result {
+            padding: 10px;
+            border-radius: 4px;
+            margin: 10px 0;
+            font-weight: bold;
+        }
+        .success { background: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
+        .error { background: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
+        .warning { background: #fff3cd; color: #856404; border: 1px solid #ffeaa7; }
+        .btn {
+            background: #007bff; color: white; border: none; padding: 10px 20px;
+            border-radius: 4px; cursor: pointer; margin: 5px;
+        }
+        .btn:hover { background: #0056b3; }
+        .btn-secondary { background: #6c757d; }
+        .btn-secondary:hover { background: #5a6268; }
+        .test-section {
+            border-left: 4px solid #007bff;
+            padding-left: 15px;
+            margin: 20px 0;
+        }
+        .demo-area {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 8px;
+            margin: 15px 0;
+        }
+        pre {
+            background: #f8f9fa; padding: 10px; border-radius: 4px;
+            overflow-x: auto; font-size: 0.9em;
+        }
+        .status-indicator {
+            display: inline-block;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 0.8rem;
+            font-weight: bold;
+            margin: 5px 0;
+        }
+    </style>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="test-container">
+        <h1>🤖 AI Toggle UI Test - Task 2</h1>
+        <p>Testing AI enhancement toggle controls, job description areas, and location inputs</p>
+        
+        <div class="test-section">
+            <h3>System Status</h3>
+            <div id="system-status"></div>
+            <button class="btn" onclick="checkSystemStatus()">Check System Status</button>
+        </div>
+
+        <div class="test-section">
+            <h3>Toggle Functionality Test</h3>
+            <button class="btn" onclick="testToggleFunctionality()">Test Toggle Functions</button>
+            <div id="toggle-results"></div>
+        </div>
+
+        <div class="test-section">
+            <h3>Demo Scope Selection</h3>
+            <p>Simulate the scope selection interface with AI toggles:</p>
+            <button class="btn" onclick="setupDemoScopes()">Setup Demo Scopes</button>
+            <button class="btn btn-secondary" onclick="clearDemo()">Clear Demo</button>
+            
+            <div id="demo-scopes-container" class="demo-area"></div>
+        </div>
+
+        <div class="test-section">
+            <h3>State Management Test</h3>
+            <button class="btn" onclick="testStateManagement()">Test State Saving/Loading</button>
+            <button class="btn btn-secondary" onclick="clearStoredState()">Clear Stored State</button>
+            <div id="state-results"></div>
+        </div>
+
+        <div class="test-section">
+            <h3>Manual Test Area</h3>
+            <p>Use the main application to test the full scope selection interface:</p>
+            <button class="btn" onclick="openMainApp()">Open Main Application</button>
+        </div>
+    </div>
+
+    <script src="renovation-data.js"></script>
+    <script src="ai-config.js"></script>
+    <script src="script.js"></script>
+    <script>
+        // Test Results Display
+        function showResult(containerId, message, type = 'success') {
+            const container = document.getElementById(containerId);
+            const resultDiv = document.createElement('div');
+            resultDiv.className = `test-result ${type}`;
+            resultDiv.innerHTML = message;
+            container.appendChild(resultDiv);
+        }
+
+        function clearResults(containerId) {
+            document.getElementById(containerId).innerHTML = '';
+        }
+
+        // System Status Check
+        function checkSystemStatus() {
+            clearResults('system-status');
+            
+            try {
+                // Check AI status
+                const aiStatus = AppState.aiState.available ? 
+                    '<span class="status-indicator success">🤖 AI Available</span>' :
+                    '<span class="status-indicator warning">📋 AI Unavailable (Fallback Mode)</span>';
+                
+                showResult('system-status', aiStatus, 'success');
+                
+                // Check CSS styles loaded
+                const testElement = document.createElement('div');
+                testElement.className = 'scope-item';
+                document.body.appendChild(testElement);
+                const styles = window.getComputedStyle(testElement);
+                const hasStyles = styles.background !== 'rgba(0, 0, 0, 0)' || styles.border !== '0px none rgb(0, 0, 0)';
+                document.body.removeChild(testElement);
+                
+                showResult('system-status', 
+                    hasStyles ? '✅ CSS Styles Loaded' : '❌ CSS Styles Missing', 
+                    hasStyles ? 'success' : 'error');
+                
+                // Check renovation data
+                const dataAvailable = typeof RenovationData !== 'undefined' && 
+                                    RenovationData.DataHelper && 
+                                    RenovationData.RENOVATION_AREAS;
+                
+                showResult('system-status', 
+                    dataAvailable ? '✅ Renovation Data Available' : '❌ Renovation Data Missing',
+                    dataAvailable ? 'success' : 'error');
+                
+            } catch (error) {
+                showResult('system-status', `❌ System check failed: ${error.message}`, 'error');
+            }
+        }
+
+        // Toggle Functionality Test
+        function testToggleFunctionality() {
+            clearResults('toggle-results');
+            
+            try {
+                // Test createScopeItem function
+                if (typeof createScopeItem === 'function') {
+                    showResult('toggle-results', '✅ createScopeItem function available', 'success');
+                    
+                    // Test creating a scope item
+                    const testScope = createScopeItem('Kitchen', 'Cabinet replacement/refacing');
+                    if (testScope && testScope.classList.contains('scope-item')) {
+                        showResult('toggle-results', '✅ Scope item creation works', 'success');
+                        
+                        // Test finding toggle elements
+                        const toggle = testScope.querySelector('.ai-enhance-toggle');
+                        const panel = testScope.querySelector('.ai-enhancement-panel');
+                        const textarea = testScope.querySelector('.job-description-textarea');
+                        const locationInput = testScope.querySelector('.location-input[data-scope]');
+                        
+                        if (toggle && panel && textarea && locationInput) {
+                            showResult('toggle-results', '✅ All UI elements present', 'success');
+                        } else {
+                            showResult('toggle-results', '❌ Missing UI elements', 'error');
+                        }
+                        
+                    } else {
+                        showResult('toggle-results', '❌ Scope item creation failed', 'error');
+                    }
+                } else {
+                    showResult('toggle-results', '❌ createScopeItem function not available', 'error');
+                }
+                
+                // Test state management functions
+                if (typeof saveSelectionState === 'function' && typeof loadSavedState === 'function') {
+                    showResult('toggle-results', '✅ State management functions available', 'success');
+                } else {
+                    showResult('toggle-results', '❌ State management functions missing', 'error');
+                }
+                
+            } catch (error) {
+                showResult('toggle-results', `❌ Toggle test failed: ${error.message}`, 'error');
+            }
+        }
+
+        // Setup Demo Scopes
+        function setupDemoScopes() {
+            const container = document.getElementById('demo-scopes-container');
+            container.innerHTML = '';
+            
+            try {
+                // Mock some selected areas for demo
+                AppState.selectedAreas = ['Kitchen', 'Bathroom'];
+                AppState.selectedScopes = {};
+                
+                // Add demo message
+                const demoHeader = document.createElement('div');
+                demoHeader.innerHTML = `
+                    <h4>Demo: Kitchen & Bathroom Scopes</h4>
+                    <p>Try selecting scopes and toggling AI enhancement to see the functionality:</p>
+                `;
+                container.appendChild(demoHeader);
+                
+                // Create demo scopes for Kitchen
+                const kitchenScopes = ['Cabinet replacement/refacing', 'Countertop installation'];
+                kitchenScopes.forEach(scope => {
+                    const scopeItem = createScopeItem('Kitchen', scope);
+                    container.appendChild(scopeItem);
+                });
+                
+                // Create demo scopes for Bathroom  
+                const bathroomScopes = ['Tile work', 'Vanity and sink replacement'];
+                bathroomScopes.forEach(scope => {
+                    const scopeItem = createScopeItem('Bathroom', scope);
+                    container.appendChild(scopeItem);
+                });
+                
+                showResult('toggle-results', '✅ Demo scopes created successfully', 'success');
+                
+            } catch (error) {
+                showResult('toggle-results', `❌ Demo setup failed: ${error.message}`, 'error');
+            }
+        }
+
+        // Clear Demo
+        function clearDemo() {
+            document.getElementById('demo-scopes-container').innerHTML = '';
+            AppState.selectedAreas = [];
+            AppState.selectedScopes = {};
+        }
+
+        // Test State Management
+        function testStateManagement() {
+            clearResults('state-results');
+            
+            try {
+                // Set up test data
+                AppState.globalLocation = 'Chicago, IL';
+                AppState.aiEnhancedScopes = { 'test-scope': true };
+                AppState.scopeJobDescriptions = { 'test-scope': 'Test description' };
+                AppState.scopeLocations = { 'test-scope': 'Test location' };
+                
+                // Save state
+                saveSelectionState();
+                showResult('state-results', '✅ State saved successfully', 'success');
+                
+                // Clear state
+                AppState.globalLocation = '';
+                AppState.aiEnhancedScopes = {};
+                AppState.scopeJobDescriptions = {};
+                AppState.scopeLocations = {};
+                
+                // Load state
+                loadSavedState();
+                
+                // Verify state was loaded
+                const stateRestored = AppState.globalLocation === 'Chicago, IL' &&
+                                   AppState.aiEnhancedScopes['test-scope'] === true &&
+                                   AppState.scopeJobDescriptions['test-scope'] === 'Test description' &&
+                                   AppState.scopeLocations['test-scope'] === 'Test location';
+                
+                if (stateRestored) {
+                    showResult('state-results', '✅ State loaded successfully', 'success');
+                    showResult('state-results', `<pre>${JSON.stringify({
+                        globalLocation: AppState.globalLocation,
+                        aiEnhancedScopes: AppState.aiEnhancedScopes,
+                        scopeJobDescriptions: AppState.scopeJobDescriptions,
+                        scopeLocations: AppState.scopeLocations
+                    }, null, 2)}</pre>`, 'success');
+                } else {
+                    showResult('state-results', '❌ State loading failed', 'error');
+                }
+                
+            } catch (error) {
+                showResult('state-results', `❌ State management test failed: ${error.message}`, 'error');
+            }
+        }
+
+        // Clear Stored State
+        function clearStoredState() {
+            try {
+                localStorage.removeItem('renovation_app_state');
+                showResult('state-results', '✅ Stored state cleared', 'success');
+            } catch (error) {
+                showResult('state-results', `❌ Failed to clear state: ${error.message}`, 'error');
+            }
+        }
+
+        // Open Main Application
+        function openMainApp() {
+            window.open('index.html', '_blank');
+        }
+
+        // Auto-run basic tests on load
+        document.addEventListener('DOMContentLoaded', () => {
+            console.log('🧪 AI Toggle UI Test Page Loaded');
+            setTimeout(() => {
+                checkSystemStatus();
+                testToggleFunctionality();
+            }, 500);
+        });
+    </script>
+</body>
+</html> 

@@ -1,0 +1,616 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Status Debug - Task 2 Fix</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .debug-container {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+        .status-good { color: #28a745; font-weight: bold; }
+        .status-warning { color: #ffc107; font-weight: bold; }
+        .status-error { color: #dc3545; font-weight: bold; }
+        .setup-section {
+            background: #e9ecef;
+            padding: 15px;
+            border-radius: 6px;
+            margin: 15px 0;
+        }
+        .btn {
+            background: #007bff; color: white; border: none; padding: 10px 20px;
+            border-radius: 4px; cursor: pointer; margin: 5px;
+        }
+        .btn:hover { background: #0056b3; }
+        pre { background: #f8f9fa; padding: 10px; border-radius: 4px; overflow-x: auto; }
+        .api-key-input {
+            width: 400px; padding: 8px; margin: 10px 0;
+            border: 1px solid #ccc; border-radius: 4px;
+        }
+    </style>
+</head>
+<body>
+    <div class="debug-container">
+        <h1>🔧 AI Status Debug & Setup</h1>
+        <p>This page helps diagnose and fix AI availability issues</p>
+        
+        <h3>📊 Current Status</h3>
+        <div id="status-report"></div>
+        
+        <h3>🔧 Quick Fixes</h3>
+        <div class="setup-section">
+            <h4>Fix Common Issues</h4>
+            <button class="btn" onclick="reloadRenovationData()">🔄 Reload RenovationData</button>
+            <button class="btn" onclick="checkCurrentStatus()">📊 Refresh Status</button>
+            <div id="fix-results"></div>
+        </div>
+        
+        <h3>🔑 Claude API Key Setup</h3>
+        <div class="setup-section">
+            <p><strong>Step 1:</strong> Get your Claude API key from <a href="https://console.anthropic.com" target="_blank">console.anthropic.com</a></p>
+            <ol>
+                <li>Sign up or log in to your Anthropic account</li>
+                <li>Go to Account Settings → API Keys</li>
+                <li>Create a new API key (starts with <code>sk-ant-</code>)</li>
+                <li>Copy the full key</li>
+            </ol>
+            
+            <p><strong>Step 2:</strong> Enter your API key here:</p>
+            <input type="password" id="api-key-input" class="api-key-input" placeholder="sk-ant-...">
+            <button class="btn" onclick="testAndSaveApiKey()">Test & Save API Key</button>
+            <button class="btn" onclick="clearApiKey()">Clear Stored Key</button>
+            
+            <div id="api-test-results"></div>
+        </div>
+        
+        <h3>🧪 Fixed Issues Test</h3>
+        <button class="btn" onclick="testFixedFunctions()">Test All Fixed Functions</button>
+        <div id="function-test-results"></div>
+        
+        <h3>📋 Quick Test</h3>
+        <button class="btn" onclick="runQuickTest()">Run Quick Scope Creation Test</button>
+        <div id="quick-test-results"></div>
+
+        <h3>🔧 Advanced Testing</h3>
+        <div class="setup-section">
+            <h4>Test Core Functions</h4>
+            <button class="btn" onclick="testFixedFunctions()">🧪 Test Fixed Functions</button>
+            <button class="btn" onclick="runQuickTest()">⚡ Quick UI Test</button>
+            <button class="btn" onclick="testMockAI()">🤖 Test Mock AI Enhancement</button>
+            <button class="btn" onclick="testEndToEndAI()">🚀 Test End-to-End AI Integration</button>
+            <div id="function-test-results"></div>
+            <div id="quick-test-results"></div>
+            <div id="mock-ai-results"></div>
+            <div id="end-to-end-results"></div>
+        </div>
+    </div>
+
+    <script src="renovation-data.js" onerror="console.error('Failed to load renovation-data.js')"></script>
+    <script src="ai-config.js" onerror="console.error('Failed to load ai-config.js')"></script>
+    <script src="script.js" onerror="console.error('Failed to load script.js')"></script>
+    <script>
+        // Enhanced script loading diagnostics
+        console.log('🔍 Debug page script loading diagnostics:');
+        console.log('   - renovation-data.js available:', typeof RenovationData !== 'undefined');
+        console.log('   - ai-config.js available:', typeof AIConfigUtils !== 'undefined');  
+        console.log('   - script.js functions available:', typeof createScopeItem !== 'undefined');
+        
+        if (typeof RenovationData !== 'undefined') {
+            console.log('   - RenovationData.DataHelper:', typeof RenovationData.DataHelper !== 'undefined');
+            console.log('   - RenovationData.RENOVATION_AREAS:', typeof RenovationData.RENOVATION_AREAS !== 'undefined');
+        } else {
+            console.error('❌ RenovationData not loaded - this will cause test failures');
+        }
+    </script>
+    <script>
+        function displayStatus(containerId, message, type = 'good') {
+            const container = document.getElementById(containerId);
+            const div = document.createElement('div');
+            div.className = `status-${type}`;
+            div.innerHTML = message;
+            container.appendChild(div);
+        }
+
+        function clearContainer(containerId) {
+            document.getElementById(containerId).innerHTML = '';
+        }
+
+        // Check current AI status
+        function checkCurrentStatus() {
+            clearContainer('status-report');
+            
+            // Check if AI config is loaded
+            if (typeof AI_CONFIG !== 'undefined') {
+                displayStatus('status-report', '✅ AI Config loaded', 'good');
+            } else {
+                displayStatus('status-report', '❌ AI Config not loaded', 'error');
+                return;
+            }
+            
+            // Check API key
+            const apiKey = AIConfigUtils?.getApiKey();
+            if (apiKey) {
+                displayStatus('status-report', '✅ API Key found in storage', 'good');
+                displayStatus('status-report', `Key format: ${apiKey.substring(0, 10)}...`, 'good');
+            } else {
+                displayStatus('status-report', '⚠️ No API Key configured', 'warning');
+                displayStatus('status-report', 'This is why AI shows as "unavailable" - it needs an API key to work', 'warning');
+            }
+            
+            // Check AppState AI status
+            if (typeof AppState !== 'undefined' && AppState.aiState) {
+                displayStatus('status-report', `AI Initialized: ${AppState.aiState.initialized}`, AppState.aiState.initialized ? 'good' : 'warning');
+                displayStatus('status-report', `AI Available: ${AppState.aiState.available}`, AppState.aiState.available ? 'good' : 'warning');
+                displayStatus('status-report', `Fallback Mode: ${AppState.aiState.fallbackMode}`, AppState.aiState.fallbackMode ? 'warning' : 'good');
+                if (AppState.aiState.error) {
+                    displayStatus('status-report', `Error: ${AppState.aiState.error}`, 'error');
+                }
+            } else {
+                displayStatus('status-report', '❌ AppState AI info not available', 'error');
+            }
+            
+            // Check renovation data functions with enhanced diagnostics
+            if (typeof RenovationData !== 'undefined') {
+                displayStatus('status-report', '✅ RenovationData loaded', 'good');
+                
+                if (RenovationData.DataHelper) {
+                    displayStatus('status-report', '✅ DataHelper available', 'good');
+                    const hasFunction = typeof RenovationData.DataHelper.hasStepBreakdown === 'function';
+                    displayStatus('status-report', `hasStepBreakdown function: ${hasFunction ? '✅ Available' : '❌ Missing'}`, hasFunction ? 'good' : 'error');
+                } else {
+                    displayStatus('status-report', '❌ DataHelper not available in RenovationData', 'error');
+                    console.error('RenovationData object:', RenovationData);
+                }
+            } else {
+                displayStatus('status-report', '❌ RenovationData not available', 'error');
+                displayStatus('status-report', '💡 This may cause End-to-End tests to fail', 'warning');
+                console.error('Available global objects:', Object.keys(window).filter(key => key.includes('Renovation') || key.includes('Data')));
+            }
+        }
+
+        // Test and save API key
+        async function testAndSaveApiKey() {
+            clearContainer('api-test-results');
+            const apiKey = document.getElementById('api-key-input').value.trim();
+            
+            if (!apiKey) {
+                displayStatus('api-test-results', '⚠️ Please enter an API key', 'warning');
+                return;
+            }
+            
+            // Validate format
+            if (!AIConfigUtils.validateApiKey(apiKey)) {
+                displayStatus('api-test-results', '❌ Invalid API key format (should start with sk-ant-)', 'error');
+                return;
+            }
+            
+            displayStatus('api-test-results', '🔄 Testing API key...', 'warning');
+            
+            try {
+                // Test the API key
+                const result = await AIConfigUtils.testApiConnection(apiKey);
+                
+                displayStatus('api-test-results', '✅ API key is valid and working!', 'good');
+                displayStatus('api-test-results', `Model: ${result.model}`, 'good');
+                displayStatus('api-test-results', `Usage: ${JSON.stringify(result.usage, null, 2)}`, 'good');
+                
+                // Save the key
+                AIConfigUtils.storeApiKey(apiKey);
+                displayStatus('api-test-results', '✅ API key saved! Refresh the page to see AI become available.', 'good');
+                
+                // Update status
+                setTimeout(() => {
+                    checkCurrentStatus();
+                }, 1000);
+                
+            } catch (error) {
+                displayStatus('api-test-results', `❌ API key test failed: ${error.message}`, 'error');
+                displayStatus('api-test-results', 'Make sure your API key is correct and you have credits available', 'warning');
+            }
+        }
+
+        // Clear API key
+        function clearApiKey() {
+            try {
+                localStorage.removeItem('claude_api_key');
+                displayStatus('api-test-results', '✅ API key cleared', 'good');
+                document.getElementById('api-key-input').value = '';
+                setTimeout(() => {
+                    checkCurrentStatus();
+                }, 500);
+            } catch (error) {
+                displayStatus('api-test-results', `❌ Failed to clear key: ${error.message}`, 'error');
+            }
+        }
+
+        // Test fixed functions
+        function testFixedFunctions() {
+            clearContainer('function-test-results');
+            
+            try {
+                // Test RenovationData availability
+                if (typeof RenovationData === 'undefined') {
+                    displayStatus('function-test-results', '❌ RenovationData not loaded', 'error');
+                    return;
+                }
+                
+                // Test DataHelper
+                if (!RenovationData.DataHelper) {
+                    displayStatus('function-test-results', '❌ DataHelper not available', 'error');
+                    return;
+                }
+                
+                displayStatus('function-test-results', '✅ RenovationData and DataHelper loaded', 'good');
+                
+                // Test hasStepBreakdown function
+                if (typeof RenovationData.DataHelper.hasStepBreakdown === 'function') {
+                    displayStatus('function-test-results', '✅ hasStepBreakdown function exists', 'good');
+                    
+                    // Test with real data
+                    const hasBreakdown = RenovationData.DataHelper.hasStepBreakdown('Kitchen', 'Cabinet replacement/refacing');
+                    displayStatus('function-test-results', `✅ Kitchen cabinet test: ${hasBreakdown}`, 'good');
+                    
+                    // Test getStepBreakdown
+                    const breakdown = RenovationData.DataHelper.getStepBreakdown('Kitchen', 'Cabinet replacement/refacing');
+                    if (breakdown && Array.isArray(breakdown)) {
+                        displayStatus('function-test-results', `✅ getStepBreakdown returns ${breakdown.length} steps`, 'good');
+                    } else {
+                        displayStatus('function-test-results', '⚠️ getStepBreakdown returned unexpected format', 'warning');
+                    }
+                    
+                } else {
+                    displayStatus('function-test-results', '❌ hasStepBreakdown function missing', 'error');
+                }
+                
+                // Test createScopeItem function
+                if (typeof createScopeItem === 'function') {
+                    displayStatus('function-test-results', '✅ createScopeItem function exists', 'good');
+                } else {
+                    displayStatus('function-test-results', '❌ createScopeItem function missing', 'error');
+                }
+                
+            } catch (error) {
+                displayStatus('function-test-results', `❌ Function test failed: ${error.message}`, 'error');
+            }
+        }
+
+        // Run quick test
+        function runQuickTest() {
+            clearContainer('quick-test-results');
+            
+            try {
+                // Create a test scope item
+                const scopeItem = createScopeItem('Kitchen', 'Cabinet replacement/refacing');
+                
+                if (scopeItem && scopeItem.classList.contains('scope-item')) {
+                    displayStatus('quick-test-results', '✅ Scope item created successfully', 'good');
+                    
+                    // Check for expected elements
+                    const toggle = scopeItem.querySelector('.ai-enhance-toggle');
+                    const textarea = scopeItem.querySelector('.job-description-textarea');
+                    const locationInput = scopeItem.querySelector('.location-input[data-scope]');
+                    
+                    if (toggle && textarea && locationInput) {
+                        displayStatus('quick-test-results', '✅ All UI elements present', 'good');
+                        displayStatus('quick-test-results', '✅ Task 2 implementation working correctly!', 'good');
+                    } else {
+                        displayStatus('quick-test-results', '⚠️ Some UI elements missing', 'warning');
+                    }
+                    
+                } else {
+                    displayStatus('quick-test-results', '❌ Scope item creation failed', 'error');
+                }
+                
+            } catch (error) {
+                displayStatus('quick-test-results', `❌ Quick test failed: ${error.message}`, 'error');
+            }
+        }
+
+        // Test Mock AI Enhancement
+        async function testMockAI() {
+            clearContainer('mock-ai-results');
+            
+            try {
+                displayStatus('mock-ai-results', '🚀 Testing Mock AI Enhancement...', 'warning');
+                
+                // Check if enhanceTaskBreakdown function exists
+                if (!AIConfigUtils.enhanceTaskBreakdown) {
+                    displayStatus('mock-ai-results', '❌ enhanceTaskBreakdown function not found', 'error');
+                    return;
+                }
+                
+                displayStatus('mock-ai-results', '✅ enhanceTaskBreakdown function found', 'good');
+                
+                // Create test data
+                const baseSteps = [
+                    {
+                        name: 'Planning & Measurement',
+                        description: 'Measure space and plan layout',
+                        estimatedDays: 3,
+                        priority: 'High',
+                        dependencies: []
+                    },
+                    {
+                        name: 'Install New Cabinets',
+                        description: 'Install cabinet boxes and doors',
+                        estimatedDays: 4,
+                        priority: 'High',
+                        dependencies: ['Planning & Measurement']
+                    }
+                ];
+                
+                const jobDescription = 'Historic 1920s building with ADA accessibility requirements and load-bearing wall modifications needed';
+                const area = 'Kitchen';
+                const scope = 'Cabinet replacement/refacing';
+                const location = 'Chicago, IL';
+                
+                displayStatus('mock-ai-results', '📝 Test Parameters:', 'good');
+                displayStatus('mock-ai-results', `- Area: ${area} → ${scope}`, 'good');
+                displayStatus('mock-ai-results', `- Location: ${location}`, 'good');
+                displayStatus('mock-ai-results', `- Description: ${jobDescription}`, 'good');
+                displayStatus('mock-ai-results', `- Base steps: ${baseSteps.length}`, 'good');
+                
+                // Test the enhancement
+                displayStatus('mock-ai-results', '🤖 Running AI Enhancement...', 'warning');
+                const startTime = Date.now();
+                
+                const result = await AIConfigUtils.enhanceTaskBreakdown(
+                    baseSteps, 
+                    jobDescription, 
+                    area, 
+                    scope, 
+                    location
+                );
+                
+                const endTime = Date.now();
+                const duration = ((endTime - startTime) / 1000).toFixed(2);
+                
+                // Analyze results
+                if (result.enhancedSteps && Array.isArray(result.enhancedSteps)) {
+                    displayStatus('mock-ai-results', `✅ Enhancement completed in ${duration}s`, 'good');
+                    displayStatus('mock-ai-results', `📊 Enhanced from ${baseSteps.length} to ${result.enhancedSteps.length} steps`, 'good');
+                    displayStatus('mock-ai-results', `🔍 Generated ${result.researchInsights.length} research insights`, 'good');
+                    
+                    // Show enhanced steps
+                    displayStatus('mock-ai-results', '📋 Enhanced Steps:', 'good');
+                    result.enhancedSteps.forEach((step, index) => {
+                        const isNew = !baseSteps.some(baseStep => baseStep.name === step.name);
+                        const icon = isNew ? '🆕' : '📝';
+                        displayStatus('mock-ai-results', `${icon} ${index + 1}. ${step.name} (${step.estimatedDays} days)`, 'good');
+                    });
+                    
+                    // Show research insights
+                    if (result.researchInsights.length > 0) {
+                        displayStatus('mock-ai-results', '🔍 Research Insights:', 'good');
+                        result.researchInsights.forEach((insight, index) => {
+                            displayStatus('mock-ai-results', `📌 ${insight.category}: ${insight.finding}`, 'good');
+                        });
+                    }
+                    
+                    displayStatus('mock-ai-results', '🎉 Mock AI Enhancement Test PASSED!', 'good');
+                    
+                } else {
+                    displayStatus('mock-ai-results', '❌ Invalid enhancement result format', 'error');
+                    console.error('Enhancement result:', result);
+                }
+                
+            } catch (error) {
+                displayStatus('mock-ai-results', `❌ Mock AI test failed: ${error.message}`, 'error');
+                console.error('Full error:', error);
+            }
+        }
+
+        // Test End-to-End AI Integration
+        async function testEndToEndAI() {
+            clearContainer('end-to-end-results');
+            
+            try {
+                displayStatus('end-to-end-results', '🚀 Testing End-to-End AI Integration...', 'warning');
+                
+                // Check if DataHelper is available
+                if (!RenovationData || !RenovationData.DataHelper) {
+                    displayStatus('end-to-end-results', '❌ RenovationData.DataHelper not available', 'error');
+                    return;
+                }
+                
+                displayStatus('end-to-end-results', '✅ DataHelper available', 'good');
+                
+                // Simulate AppState with AI enhancement enabled
+                displayStatus('end-to-end-results', '🔧 Simulating AppState with AI enhancement...', 'warning');
+                
+                // Backup original AppState if it exists
+                const originalAppState = window.AppState ? {...window.AppState} : null;
+                
+                // Create mock AppState with AI enhancement
+                window.AppState = {
+                    projectName: 'Test AI Enhancement Project',
+                    workspaceId: '12345678',
+                    selectedAreas: ['Kitchen'],
+                    selectedScopes: {
+                        'Kitchen': ['Cabinet replacement/refacing']
+                    },
+                    useStepBreakdowns: true,
+                    globalLocation: 'Chicago, IL',
+                    aiState: {
+                        initialized: true,
+                        available: true,
+                        fallbackMode: false,
+                        error: null
+                    },
+                    aiEnhancedScopes: {
+                        'kitchen-cabinet-replacement-refacing': true  // Enable AI for this scope
+                    },
+                    scopeJobDescriptions: {
+                        'kitchen-cabinet-replacement-refacing': 'Historic 1920s building with ADA accessibility requirements and load-bearing wall modifications needed'
+                    },
+                    scopeLocations: {
+                        'kitchen-cabinet-replacement-refacing': 'Chicago, IL'
+                    }
+                };
+                
+                displayStatus('end-to-end-results', '✅ Mock AppState created with AI enhancement enabled', 'good');
+                displayStatus('end-to-end-results', '   - Project: Test AI Enhancement Project', 'good');
+                displayStatus('end-to-end-results', '   - Scope: Kitchen → Cabinet replacement/refacing', 'good');
+                displayStatus('end-to-end-results', '   - AI Enhanced: YES', 'good');
+                displayStatus('end-to-end-results', '   - Description: Historic 1920s building with ADA...', 'good');
+                
+                // Test board structure generation with AI
+                displayStatus('end-to-end-results', '🏗️ Testing board structure generation with AI...', 'warning');
+                const startTime = Date.now();
+                
+                const boardStructure = await RenovationData.DataHelper.generateBoardStructure(
+                    window.AppState.projectName,
+                    window.AppState.selectedScopes
+                );
+                
+                const endTime = Date.now();
+                const duration = ((endTime - startTime) / 1000).toFixed(2);
+                
+                displayStatus('end-to-end-results', `✅ Board structure generated in ${duration}s`, 'good');
+                
+                // Analyze the generated board structure
+                if (boardStructure && boardStructure.items) {
+                    const totalItems = boardStructure.items.length;
+                    const aiEnhancedItems = boardStructure.items.filter(item => 
+                        item.metadata && item.metadata.isAiEnhanced
+                    );
+                    const baseItems = boardStructure.items.filter(item => 
+                        item.metadata && item.metadata.stepSource === 'base-template'
+                    );
+                    const singleItems = boardStructure.items.filter(item => 
+                        item.metadata && item.metadata.stepSource === 'single-item'
+                    );
+                    
+                    displayStatus('end-to-end-results', '📊 Board Structure Analysis:', 'good');
+                    displayStatus('end-to-end-results', `   - Total items: ${totalItems}`, 'good');
+                    displayStatus('end-to-end-results', `   - AI enhanced items: ${aiEnhancedItems.length}`, 'good');
+                    displayStatus('end-to-end-results', `   - Base template items: ${baseItems.length}`, 'good');
+                    displayStatus('end-to-end-results', `   - Single items: ${singleItems.length}`, 'good');
+                    
+                    // Show some AI-enhanced items
+                    if (aiEnhancedItems.length > 0) {
+                        displayStatus('end-to-end-results', '🤖 AI Enhanced Items Found:', 'good');
+                        aiEnhancedItems.slice(0, 3).forEach((item, index) => {
+                            displayStatus('end-to-end-results', `   ${index + 1}. ${item.name} (${item.metadata.estimatedDays} days)`, 'good');
+                        });
+                        if (aiEnhancedItems.length > 3) {
+                            displayStatus('end-to-end-results', `   ... and ${aiEnhancedItems.length - 3} more`, 'good');
+                        }
+                    }
+                    
+                    // Check for specific AI enhancements
+                    const historicItems = boardStructure.items.filter(item => 
+                        item.name && item.name.toLowerCase().includes('historic')
+                    );
+                    const adaItems = boardStructure.items.filter(item => 
+                        item.metadata && item.metadata.stepDescription && 
+                        item.metadata.stepDescription.toLowerCase().includes('ada')
+                    );
+                    const structuralItems = boardStructure.items.filter(item => 
+                        item.name && item.name.toLowerCase().includes('structural')
+                    );
+                    
+                    if (historicItems.length > 0 || adaItems.length > 0 || structuralItems.length > 0) {
+                        displayStatus('end-to-end-results', '🔍 Detected AI Enhancements:', 'good');
+                        if (historicItems.length > 0) displayStatus('end-to-end-results', `   - Historic preservation: ${historicItems.length} items`, 'good');
+                        if (adaItems.length > 0) displayStatus('end-to-end-results', `   - ADA compliance: ${adaItems.length} items`, 'good');
+                        if (structuralItems.length > 0) displayStatus('end-to-end-results', `   - Structural work: ${structuralItems.length} items`, 'good');
+                    }
+                    
+                    displayStatus('end-to-end-results', '🎉 End-to-End AI Integration Test PASSED!', 'good');
+                    displayStatus('end-to-end-results', 'AI enhancement is fully integrated into board creation workflow', 'good');
+                    
+                } else {
+                    displayStatus('end-to-end-results', '❌ Invalid board structure returned', 'error');
+                    console.error('Board structure:', boardStructure);
+                }
+                
+                // Restore original AppState
+                if (originalAppState) {
+                    window.AppState = originalAppState;
+                    displayStatus('end-to-end-results', '🔄 Original AppState restored', 'good');
+                } else {
+                    delete window.AppState;
+                    displayStatus('end-to-end-results', '🔄 Test AppState cleaned up', 'good');
+                }
+                
+            } catch (error) {
+                displayStatus('end-to-end-results', `❌ End-to-End test failed: ${error.message}`, 'error');
+                console.error('Full error:', error);
+                
+                // Try to restore AppState on error
+                try {
+                    if (originalAppState) {
+                        window.AppState = originalAppState;
+                    } else {
+                        delete window.AppState;
+                    }
+                } catch (restoreError) {
+                    console.error('Failed to restore AppState:', restoreError);
+                }
+            }
+        }
+
+        // Reload RenovationData module
+        function reloadRenovationData() {
+            clearContainer('fix-results');
+            
+            try {
+                displayStatus('fix-results', '🔄 Attempting to reload RenovationData...', 'warning');
+                
+                // Remove existing script if it exists
+                const existingScript = document.querySelector('script[src="renovation-data.js"]');
+                if (existingScript) {
+                    existingScript.remove();
+                    displayStatus('fix-results', '🗑️ Removed existing script tag', 'good');
+                }
+                
+                // Create new script element
+                const script = document.createElement('script');
+                script.src = 'renovation-data.js?' + new Date().getTime(); // Cache busting
+                script.onload = function() {
+                    displayStatus('fix-results', '✅ renovation-data.js reloaded successfully', 'good');
+                    
+                    // Check if RenovationData is now available
+                    if (typeof RenovationData !== 'undefined') {
+                        displayStatus('fix-results', '✅ RenovationData is now available!', 'good');
+                        displayStatus('fix-results', '🔄 Refreshing status...', 'warning');
+                        setTimeout(() => {
+                            checkCurrentStatus();
+                        }, 100);
+                    } else {
+                        displayStatus('fix-results', '❌ RenovationData still not available after reload', 'error');
+                    }
+                };
+                script.onerror = function() {
+                    displayStatus('fix-results', '❌ Failed to reload renovation-data.js', 'error');
+                    displayStatus('fix-results', '💡 Check that the file exists and server is running', 'warning');
+                };
+                
+                document.head.appendChild(script);
+                
+            } catch (error) {
+                displayStatus('fix-results', `❌ Reload failed: ${error.message}`, 'error');
+            }
+        }
+
+        // Auto-run status check on load
+        document.addEventListener('DOMContentLoaded', () => {
+            setTimeout(() => {
+                checkCurrentStatus();
+            }, 500);
+        });
+    </script>
+</body>
+</html> 

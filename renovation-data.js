@@ -1,4 +1,4 @@
- // Renovation Project Manager - Data Configuration
+// Renovation Project Manager - Data Configuration
 // Complete renovation areas and scopes as defined in PRD
 
 // Standard "Design and Planning" tasks (always included)
@@ -2360,6 +2360,32 @@ const DataHelper = {
         
         return totalTasks;
     },
+
+    // Step Breakdown Helper Functions - Added for Task 2 compatibility
+    // Check if a scope has step breakdown available
+    hasStepBreakdown: function(area, scope) {
+        return SCOPE_STEP_BREAKDOWNS[area] && SCOPE_STEP_BREAKDOWNS[area][scope];
+    },
+    
+    // Get step breakdown for a specific scope
+    getStepBreakdown: function(area, scope) {
+        const breakdown = SCOPE_STEP_BREAKDOWNS[area] && SCOPE_STEP_BREAKDOWNS[area][scope];
+        return breakdown ? breakdown.steps : null;
+    },
+    
+    // Get all scopes with step breakdowns for an area
+    getScopesWithBreakdowns: function(area) {
+        return SCOPE_STEP_BREAKDOWNS[area] ? Object.keys(SCOPE_STEP_BREAKDOWNS[area]) : [];
+    },
+    
+    // Get count of available step breakdowns
+    getBreakdownCount: function() {
+        let count = 0;
+        Object.values(SCOPE_STEP_BREAKDOWNS).forEach(areaBreakdowns => {
+            count += Object.keys(areaBreakdowns).length;
+        });
+        return count;
+    },
     
     // Enhanced Selection Processing Engine - Task 4.1
     processUserSelections: function(selectedAreas, selectedScopes, projectName, workspaceId) {
@@ -2494,9 +2520,9 @@ const DataHelper = {
         return true;
     },
 
-    // Transform selections to API-ready format
-    transformToApiFormat: function(processedData) {
-        console.log('🔄 Transforming selections to API format...');
+    // Transform selections to API-ready format with AI enhancement support
+    transformToApiFormat: async function(processedData) {
+        console.log('🔄 Transforming selections to API format with AI enhancement...');
         
         const apiData = {
             boardName: `${processedData.projectName} - Renovation Project`,
@@ -2543,7 +2569,7 @@ const DataHelper = {
         let groupPosition = 2;
         console.log(`🔍 Processing selectedScopes:`, processedData.selectedScopes);
         
-        Object.entries(processedData.selectedScopes).forEach(([area, scopes]) => {
+        for (const [area, scopes] of Object.entries(processedData.selectedScopes)) {
             console.log(`🔍 Processing area: ${area}, scopes:`, scopes);
             
             apiData.groups.push({
@@ -2552,23 +2578,90 @@ const DataHelper = {
             });
             
             let itemPosition = 0;
-            scopes.forEach((scope) => {
+            // Process scopes sequentially to handle async AI enhancement
+            for (const scope of scopes) {
+                // Check if this scope is AI-enhanced
+                const scopeId = `${area}-${scope}`.replace(/[^a-zA-Z0-9]/g, '-').toLowerCase();
+                
+                // Add debug logging for AppState
+                console.log(`🔍 DEBUG - Current AppState for AI detection:`);
+                console.log(`   - AppState exists: ${!!window.AppState}`);
+                console.log(`   - aiState.available: ${window.AppState?.aiState?.available}`);
+                console.log(`   - aiEnhancedScopes exists: ${!!window.AppState?.aiEnhancedScopes}`);
+                console.log(`   - aiEnhancedScopes content: ${JSON.stringify(window.AppState?.aiEnhancedScopes || {})}`);
+                console.log(`   - scopeId we're looking for: ${scopeId}`);
+                console.log(`   - aiEnhancedScopes[scopeId]: ${window.AppState?.aiEnhancedScopes?.[scopeId]}`);
+                
+                const isAiEnhanced = window.AppState?.aiState?.available && 
+                                   window.AppState?.aiEnhancedScopes && 
+                                   window.AppState.aiEnhancedScopes[scopeId];
+                
                 // Check if this scope has step-by-step breakdown
                 const hasStepBreakdown = SCOPE_STEP_BREAKDOWNS[area] && SCOPE_STEP_BREAKDOWNS[area][scope];
                 
-                console.log(`🔍 Checking step breakdown for ${area} - ${scope}:`);
-                console.log(`   - Available breakdown areas:`, Object.keys(SCOPE_STEP_BREAKDOWNS));
-                console.log(`   - Available breakdowns for ${area}:`, SCOPE_STEP_BREAKDOWNS[area] ? Object.keys(SCOPE_STEP_BREAKDOWNS[area]) : 'NONE');
-                console.log(`   - Has breakdown data: ${!!hasStepBreakdown}`);
-                console.log(`   - AppState.useStepBreakdowns: ${window.AppState?.useStepBreakdowns}`);
-                console.log(`   - Will use steps: ${hasStepBreakdown && window.AppState?.useStepBreakdowns !== false}`);
+                console.log(`🔍 Processing scope: ${area} - ${scope}`);
+                console.log(`   - Scope ID: ${scopeId}`);
+                console.log(`   - AI Enhanced: ${isAiEnhanced}`);
+                console.log(`   - Has base breakdown: ${!!hasStepBreakdown}`);
+                console.log(`   - Use step breakdowns: ${window.AppState?.useStepBreakdowns}`);
                 
-                if (hasStepBreakdown && window.AppState?.useStepBreakdowns !== false) {
+                let stepsToUse = null;
+                let stepSource = 'single-item';
+                
+                if (isAiEnhanced && hasStepBreakdown) {
+                    // AI Enhancement: Get enhanced steps from mock AI service
+                    try {
+                        console.log(`🤖 Getting AI enhancement for ${area} - ${scope}...`);
+                        
+                        const baseSteps = SCOPE_STEP_BREAKDOWNS[area][scope].steps;
+                        const jobDescription = window.AppState?.scopeJobDescriptions?.[scopeId] || '';
+                        const location = window.AppState?.scopeLocations?.[scopeId] || window.AppState?.globalLocation || '';
+                        
+                        // Call mock AI enhancement service
+                        if (window.AIConfigUtils && typeof window.AIConfigUtils.enhanceTaskBreakdown === 'function') {
+                            const aiResult = await window.AIConfigUtils.enhanceTaskBreakdown(
+                                baseSteps, jobDescription, area, scope, location
+                            );
+                            
+                            if (aiResult && aiResult.enhancedSteps && Array.isArray(aiResult.enhancedSteps)) {
+                                stepsToUse = aiResult.enhancedSteps;
+                                stepSource = 'ai-enhanced';
+                                
+                                console.log(`✅ AI Enhancement successful: ${baseSteps.length} → ${stepsToUse.length} steps`);
+                                
+                                // Log research insights if available
+                                if (aiResult.researchInsights && aiResult.researchInsights.length > 0) {
+                                    console.log(`🔍 Research insights generated: ${aiResult.researchInsights.length}`);
+                                    aiResult.researchInsights.forEach(insight => {
+                                        console.log(`   📌 ${insight.category}: ${insight.finding}`);
+                                    });
+                                }
+                            } else {
+                                console.warn('⚠️ AI Enhancement returned invalid format, using base steps');
+                                stepsToUse = baseSteps;
+                                stepSource = 'base-template';
+                            }
+                        } else {
+                            console.warn('⚠️ AI Enhancement service not available, using base steps');
+                            stepsToUse = baseSteps;
+                            stepSource = 'base-template';
+                        }
+                    } catch (error) {
+                        console.error('❌ AI Enhancement failed, using base steps:', error);
+                        stepsToUse = SCOPE_STEP_BREAKDOWNS[area][scope].steps;
+                        stepSource = 'base-template';
+                    }
+                } else if (hasStepBreakdown && window.AppState?.useStepBreakdowns !== false) {
+                    // Use base template steps
+                    stepsToUse = SCOPE_STEP_BREAKDOWNS[area][scope].steps;
+                    stepSource = 'base-template';
+                }
+                
+                if (stepsToUse && Array.isArray(stepsToUse)) {
                     // Create multiple items for each step
-                    const breakdown = SCOPE_STEP_BREAKDOWNS[area][scope];
-                    console.log(`📋 Creating step breakdown for ${scope}: ${breakdown.steps.length} steps`);
+                    console.log(`📋 Creating ${stepSource} steps for ${scope}: ${stepsToUse.length} steps`);
                     
-                    breakdown.steps.forEach((step, stepIndex) => {
+                    stepsToUse.forEach((step, stepIndex) => {
                         apiData.items.push({
                             name: step.name,
                             group: area,
@@ -2576,16 +2669,21 @@ const DataHelper = {
                             column_values: this.generateStepColumnValues(step, scope, area),
                             metadata: {
                                 isStepBreakdown: true,
+                                isAiEnhanced: stepSource === 'ai-enhanced',
+                                stepSource: stepSource,
                                 parentScope: scope,
                                 stepIndex: stepIndex,
                                 stepDescription: step.description,
                                 estimatedDays: step.estimatedDays,
-                                dependencies: step.dependencies
+                                dependencies: step.dependencies,
+                                complianceNotes: step.complianceNotes || [],
+                                researchBased: step.researchBased || false
                             }
                         });
                     });
                 } else {
                     // Create single item for scope (original behavior)
+                    console.log(`📋 Creating single item for ${scope} (no step breakdown)`);
                     apiData.items.push({
                         name: scope,
                         group: area,
@@ -2593,12 +2691,14 @@ const DataHelper = {
                         column_values: this.generateColumnValues('renovation', scope, area),
                         metadata: {
                             isStepBreakdown: false,
+                            isAiEnhanced: false,
+                            stepSource: 'single-item',
                             parentScope: scope
                         }
                     });
                 }
-            });
-        });
+            }
+        }
         
         console.log('✅ API format transformation complete');
         return apiData;
@@ -2667,9 +2767,9 @@ const DataHelper = {
         return columnValues;
     },
 
-    // Generate board structure for Monday.com API - Enhanced
-    generateBoardStructure: function(projectName, selectedScopes) {
-        console.log('🏗️ Generating enhanced board structure...');
+    // Generate board structure for Monday.com API - Enhanced with AI Support
+    generateBoardStructure: async function(projectName, selectedScopes) {
+        console.log('🏗️ Generating enhanced board structure with AI support...');
         
         try {
             // Process selections with validation
@@ -2680,8 +2780,8 @@ const DataHelper = {
                 window.AppState?.workspaceId || 'default'
             );
             
-            // Transform to API format
-            const apiData = this.transformToApiFormat(processedData);
+            // Transform to API format with AI enhancement
+            const apiData = await this.transformToApiFormat(processedData);
             
             // Legacy format for backward compatibility
             const legacyStructure = {
@@ -2697,7 +2797,7 @@ const DataHelper = {
                 }))
             };
             
-            console.log('✅ Board structure generated successfully');
+            console.log('✅ Board structure generated successfully with AI enhancements');
             return legacyStructure;
             
         } catch (error) {
